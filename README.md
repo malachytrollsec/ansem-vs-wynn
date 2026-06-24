@@ -31,7 +31,7 @@ npm run export:web
 - Pressure modes: standard, rush, and siege.
 - RTS loop: villagers, army units, housing, forge, towers, market income, upgrades, rally, minimap, waves, and win/loss results.
 - Wager ticket display: stake, tax, net, and win payout show on the menu, HUD, result banner, room snapshots, leaderboard rows, and multiplayer offer/accept/decline receipts.
-- Browser wallet bridge with demo fallback, local leaderboard, and verified leaderboard endpoints.
+- Browser Phantom bridge with ticket-mode fallback, local leaderboard, and verified SOL leaderboard endpoints.
 - Human multiplayer room relay over `/room`, with room status, events, proof, stream, and room-kit JSON.
 
 ## Checks

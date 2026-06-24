@@ -381,10 +381,17 @@ func _poll_web_leaderboard(sync_id: int, attempt: int) -> void:
 	if attempt < 16:
 		_poll_web_leaderboard(sync_id, attempt + 1)
 	elif is_instance_valid(leaderboard_status_lbl):
-		leaderboard_status_lbl.text = "LOCAL RECORDS"
+		var status := _web_leaderboard_status()
+		leaderboard_status_lbl.text = "WEB BOARD ERROR" if status == "error" else "LOCAL RECORDS"
+		leaderboard_status_lbl.add_theme_color_override("font_color", Game.COL_ENEMY if status == "error" else Game.COL_MUTED)
 
 func _read_web_leaderboard() -> bool:
 	if not OS.has_feature("web"):
+		return false
+	if _web_leaderboard_status() == "error":
+		if is_instance_valid(leaderboard_status_lbl):
+			leaderboard_status_lbl.text = "WEB BOARD ERROR"
+			leaderboard_status_lbl.add_theme_color_override("font_color", Game.COL_ENEMY)
 		return false
 	var raw = JavaScriptBridge.eval("JSON.stringify(window.__memepireLeaderboard || {})", true)
 	if raw == null:
@@ -401,13 +408,25 @@ func _read_web_leaderboard() -> bool:
 	_refresh_leaderboard_panel(entries, true)
 	return true
 
+func _web_leaderboard_status() -> String:
+	if not OS.has_feature("web"):
+		return ""
+	var status = JavaScriptBridge.eval("window.__memepireLeaderboardStatus || ''", true)
+	return String(status) if status != null else ""
+
+func _wager_unit_label() -> String:
+	return "SOL" if Wallet.verified else "ticket"
+
+func _wager_mode_label() -> String:
+	return "verified SOL" if Wallet.verified else "ticket"
+
 func _refresh_wager() -> void:
 	if not is_instance_valid(wager_lbl):
 		return
 	if Game.wager_stake <= 0:
 		wager_lbl.text = "NO TICKET"
 	else:
-		var unit := "SOL" if Wallet.verified else "TICKET"
+		var unit := _wager_unit_label().to_upper()
 		wager_lbl.text = "%s %d  TAX %d  WIN %d" % [unit, Game.wager_stake, Game.wager_tax(), Game.wager_payout(true)]
 
 func _apply_responsive_layout() -> void:
@@ -469,7 +488,7 @@ func _bump_wager(d: int) -> void:
 	peer_wager_offer.clear()
 	_refresh_wager()
 	_refresh_room_share()
-	_set_wager_status("ticket updated")
+	_set_wager_status("%s wager updated" % _wager_mode_label())
 	_send_wager_offer_soon()
 
 func _line_edit(val: String) -> LineEdit:
@@ -527,7 +546,7 @@ func _build_lobby() -> void:
 	vb.add_child(net_roster_lbl)
 	room_share_lbl = _label("room links ready", f_ui, 10, Game.COL_MUTED)
 	vb.add_child(room_share_lbl)
-	wager_status_lbl = _label("ticket offer waits for opponent", f_ui, 10, Game.COL_MUTED)
+	wager_status_lbl = _label("%s offer waits for opponent" % _wager_mode_label(), f_ui, 10, Game.COL_MUTED)
 	vb.add_child(wager_status_lbl)
 	var ticket_row := HBoxContainer.new()
 	ticket_row.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -596,7 +615,7 @@ func _room_links_smoke() -> void:
 
 func _refresh_room_share() -> void:
 	if room_share_lbl:
-		room_share_lbl.text = "share code %s | stake %d | tax %d" % [_room_code(), Game.wager_stake, Game.wager_tax()]
+		room_share_lbl.text = "share code %s | %s %d | tax %d" % [_room_code(), _wager_unit_label().to_upper(), Game.wager_stake, Game.wager_tax()]
 
 func _set_wager_status(text: String, can_answer := false) -> void:
 	if wager_status_lbl:
@@ -637,7 +656,7 @@ func _maybe_send_wager_offer() -> void:
 		return
 	_last_offer_key = key
 	Net.send_msg({"type": "wager-offer", "wager": packet, "identity": {"label": String(packet.get("fromLabel", "")), "king": selected_king}})
-	_set_wager_status("ticket offered: stake %d, win %d" % [int(packet.get("stake", 0)), int(packet.get("winPayout", 0))])
+	_set_wager_status("%s offered: stake %d, win %d" % [String(packet.get("unit", "ticket")).to_upper(), int(packet.get("stake", 0)), int(packet.get("winPayout", 0))])
 
 func _on_room_message(msg: Dictionary) -> void:
 	var typ := String(msg.get("type", ""))
@@ -650,7 +669,7 @@ func _on_room_message(msg: Dictionary) -> void:
 		var payout := int(peer_wager_offer.get("winPayout", 0))
 		var label := String(peer_wager_offer.get("fromLabel", msg.get("from", "peer")))
 		var unit := String(peer_wager_offer.get("unit", "SOL" if bool(peer_wager_offer.get("verified", false)) else "ticket"))
-		_set_wager_status("%s offers %s %d, win %d" % [label, unit, stake, payout], true)
+		_set_wager_status("%s offers %s %d, win %d" % [label, unit.to_upper(), stake, payout], true)
 		Game.publish_web_state({"peerWagerOffer": peer_wager_offer})
 	elif typ == "wager-receipt":
 		var receipt = msg.get("wager", {})
@@ -658,7 +677,8 @@ func _on_room_message(msg: Dictionary) -> void:
 			return
 		var status := String(receipt.get("wagerStatus", "seen"))
 		wager_ticket_accepted = status == "accepted"
-		_set_wager_status("peer %s ticket %s" % [status, String(receipt.get("ticketId", ""))])
+		var unit := String(receipt.get("unit", "ticket")).to_upper()
+		_set_wager_status("peer %s %s %s" % [status, unit, String(receipt.get("ticketId", ""))])
 		Game.publish_web_state({"wagerReceipt": receipt})
 
 func _send_wager_receipt(status: String) -> void:
@@ -670,7 +690,7 @@ func _send_wager_receipt(status: String) -> void:
 	receipt["fromLabel"] = String(Game.KINGS[selected_king]["name"])
 	wager_ticket_accepted = status == "accepted"
 	Net.send_msg({"type": "wager-receipt", "wager": receipt, "identity": {"label": String(receipt.get("fromLabel", "")), "king": selected_king}})
-	_set_wager_status("you %s ticket %s" % [status, String(receipt.get("ticketId", ""))])
+	_set_wager_status("you %s %s %s" % [status, String(receipt.get("unit", "ticket")).to_upper(), String(receipt.get("ticketId", ""))])
 	Game.publish_web_state({"wagerReceipt": receipt})
 
 func _accept_wager() -> void:
@@ -783,7 +803,7 @@ func _refresh_roster() -> void:
 		return
 	if Net.roster.is_empty():
 		net_roster_lbl.text = "waiting for opponent…"
-		_set_wager_status("ticket offer waits for opponent")
+		_set_wager_status("%s offer waits for opponent" % _wager_mode_label())
 		return
 	var names := []
 	for p in Net.roster:
@@ -800,7 +820,7 @@ func _net_host() -> void:
 	wager_ticket_accepted = false
 	peer_wager_offer.clear()
 	_refresh_room_share()
-	_set_wager_status("hosting ticket room")
+	_set_wager_status("hosting %s room" % _wager_mode_label())
 	Game.publish_web_state({"scene": "menu", "netMode": Game.net_mode, "myTeam": Game.my_team, "selectedKing": selected_king})
 	Net.host_room(room_edit.text.strip_edges())
 	_send_wager_offer_soon()
@@ -814,7 +834,7 @@ func _net_join() -> void:
 	wager_ticket_accepted = false
 	peer_wager_offer.clear()
 	_refresh_room_share()
-	_set_wager_status("joining ticket room")
+	_set_wager_status("joining %s room" % _wager_mode_label())
 	Game.publish_web_state({"scene": "menu", "netMode": Game.net_mode, "myTeam": Game.my_team, "selectedKing": selected_king})
 	Net.join_room(room_edit.text.strip_edges())
 	_send_wager_offer_soon()
@@ -830,8 +850,8 @@ func _net_launch() -> void:
 		net_status_lbl.text = "waiting for opponent"
 		return
 	if Game.wager_stake > 0 and not wager_ticket_accepted:
-		net_status_lbl.text = "waiting for accepted ticket"
-		_set_wager_status("waiting for accepted ticket")
+		net_status_lbl.text = "waiting for accepted wager"
+		_set_wager_status("waiting for accepted %s" % _wager_mode_label())
 		return
 	Game.player_king = selected_king
 	Game.net_mode = "host"
