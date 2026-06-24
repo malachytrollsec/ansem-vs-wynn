@@ -33,8 +33,9 @@ var _ctrl_buttons: Array = []
 var _side_buttons: Array = []
 var topbar: Control
 var command_card: PanelContainer
+var command_row: HFlowContainer
 var command_status: VBoxContainer
-var control_bar: HBoxContainer
+var control_bar: HFlowContainer
 var side_panel: PanelContainer
 var portrait_build_frame: PanelContainer
 var portrait_build_row: HFlowContainer
@@ -201,7 +202,7 @@ func _apply_command_icon(b: Button, kind: String) -> void:
 	if tex == null:
 		return
 	b.icon = tex
-	b.expand_icon = true
+	b.expand_icon = false
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.add_theme_constant_override("icon_spacing", 5)
 
@@ -213,7 +214,7 @@ func _apply_control_icon(b: Button, kind: String) -> void:
 	if tex == null:
 		return
 	b.icon = tex
-	b.expand_icon = true
+	b.expand_icon = false
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.add_theme_constant_override("icon_spacing", 3)
 
@@ -260,14 +261,16 @@ func _build_command_card() -> void:
 	card.offset_bottom = -8
 	add_child(card)
 
-	var row := HBoxContainer.new()
+	var row := HFlowContainer.new()
+	command_row = row
 	row.add_theme_constant_override("separation", 8)
+	row.add_theme_constant_override("v_separation", 6)
 	card.add_child(row)
 
 	var status := VBoxContainer.new()
 	command_status = status
 	status.add_theme_constant_override("separation", 2)
-	status.custom_minimum_size = Vector2(126, 0)
+	status.custom_minimum_size = Vector2(148, 0)
 	row.add_child(status)
 
 	var sel := Label.new()
@@ -410,16 +413,16 @@ func _build_portrait_build_bar() -> void:
 
 func _ctrl_button(text: String, icon_key: String, action: Callable, tip := "") -> Button:
 	var b := Button.new()
-	b.text = text
+	b.text = text if icon_key == "speed" or icon_key == "zoom" else ""
 	b.add_theme_font_override("font", f_ui)
 	b.add_theme_font_size_override("font_size", 9)
 	b.add_theme_color_override("font_color", Game.COL_BONE)
 	b.add_theme_color_override("font_hover_color", Game.COL_ACCENT_BRIGHT)
-	b.custom_minimum_size = Vector2(76, 34)
+	b.custom_minimum_size = Vector2(44, 34)
 	_apply_control_icon(b, icon_key)
-	var sb := _texture_style(UI_RD_BUTTON, 16.0, 8.0, Color(0.9, 0.94, 1.0, 1.0))
-	var hov := _texture_style(UI_RD_BUTTON_HOVER, 16.0, 8.0, Color(1.08, 1.08, 1.08, 1.0))
-	var prs := _texture_style(UI_RD_BUTTON, 16.0, 8.0, Color(0.68, 0.72, 0.82, 1.0))
+	var sb := _texture_style(UI_RD_BUTTON, 12.0, 5.0, Color(0.9, 0.94, 1.0, 1.0))
+	var hov := _texture_style(UI_RD_BUTTON_HOVER, 12.0, 5.0, Color(1.08, 1.08, 1.08, 1.0))
+	var prs := _texture_style(UI_RD_BUTTON, 12.0, 5.0, Color(0.68, 0.72, 0.82, 1.0))
 	b.add_theme_stylebox_override("normal", sb)
 	b.add_theme_stylebox_override("hover", hov)
 	b.add_theme_stylebox_override("pressed", prs)
@@ -429,10 +432,11 @@ func _ctrl_button(text: String, icon_key: String, action: Callable, tip := "") -
 	return b
 
 func _build_control_bar() -> void:
-	var bar := HBoxContainer.new()
+	var bar := HFlowContainer.new()
 	control_bar = bar
 	bar.add_theme_constant_override("separation", 6)
-	bar.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+	bar.add_theme_constant_override("v_separation", 5)
+	bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	bar.offset_left = 268
 	bar.offset_right = -10
 	bar.offset_top = -104
@@ -441,19 +445,19 @@ func _build_control_bar() -> void:
 
 	btn_power = _ctrl_button("PWR", "power", func(): main.cmd_power(), "Power: heal all units")
 	bar.add_child(btn_power)
-	bar.add_child(_ctrl_button("ARMY", "army", func(): main.cmd_select_army(), "Select combat units"))
+	bar.add_child(_ctrl_button("ALL", "army", func(): main.cmd_select_army(), "Select combat units"))
 	bar.add_child(_ctrl_button("DEF", "defend", func(): main.cmd_defend_base(), "Defend base"))
-	bar.add_child(_ctrl_button("VILLS", "workers", func(): main.cmd_select_villagers(), "Select villagers"))
-	bar.add_child(_ctrl_button("GATH", "gather", func(): main.cmd_gather(), "Gather nearest resources"))
+	bar.add_child(_ctrl_button("VIL", "workers", func(): main.cmd_select_villagers(), "Select villagers"))
+	bar.add_child(_ctrl_button("GTH", "gather", func(): main.cmd_gather(), "Gather nearest resources"))
 	bar.add_child(_ctrl_button("ATK", "attack", func(): main.cmd_attack_move(), "Attack move"))
-	bar.add_child(_ctrl_button("HOLD", "hold", func(): main.cmd_hold(), "Hold position"))
+	bar.add_child(_ctrl_button("HLD", "hold", func(): main.cmd_hold(), "Hold position"))
 	bar.add_child(_ctrl_button("RLY", "rally", func(): main.cmd_rally(), "Set rally point"))
 	btn_pause = _ctrl_button("PAUS", "pause", func(): main.cmd_pause(), "Pause or resume")
 	bar.add_child(btn_pause)
 	btn_speed = _ctrl_button("1X", "speed", func(): main.cmd_speed(), "Cycle game speed")
 	bar.add_child(btn_speed)
 	bar.add_child(_ctrl_button("Z-", "zoom", func(): main.cmd_zoom_out(), "Zoom out"))
-	btn_zoom = _ctrl_button("100%", "zoom", func(): main.cmd_zoom_reset(), "Reset zoom")
+	btn_zoom = _ctrl_button("100", "zoom", func(): main.cmd_zoom_reset(), "Reset zoom")
 	bar.add_child(btn_zoom)
 	bar.add_child(_ctrl_button("Z+", "zoom", func(): main.cmd_zoom_in(), "Zoom in"))
 	bar.add_child(_ctrl_button("GG", "concede", func(): main.cmd_concede(), "Concede match"))
@@ -486,7 +490,7 @@ func _process(_delta: float) -> void:
 	else:
 		btn_power.text = "PWR"
 		btn_power.disabled = false
-	btn_pause.text = "RUN" if get_tree().paused else "PAUS"
+	btn_pause.text = ""
 	btn_speed.text = "%dX" % int(Engine.time_scale)
 	if btn_zoom and main.has_method("hud_zoom_label"):
 		btn_zoom.text = main.hud_zoom_label()
@@ -635,10 +639,13 @@ func _apply_responsive_layout() -> void:
 		map_h = 126.0
 	var left_lane := edge + map_w + gap
 	var side_w := 176.0 if compact else 198.0
-	var ctrl_w := 66.0 if compact else 76.0
+	var bottom_right := -edge
+	if not portrait:
+		bottom_right = -edge - side_w - gap
+	var ctrl_w := 40.0 if compact else 44.0
 	var cmd_w := 104.0 if compact else 120.0
 	if portrait:
-		ctrl_w = 58.0
+		ctrl_w = 38.0
 		cmd_w = 90.0
 	var bottom_scale := Vector2.ONE
 
@@ -687,21 +694,25 @@ func _apply_responsive_layout() -> void:
 	if is_instance_valid(control_bar):
 		control_bar.scale = bottom_scale
 		control_bar.offset_left = left_lane
-		control_bar.offset_right = -edge
-		control_bar.offset_top = -122.0 if portrait else -116.0
-		control_bar.offset_bottom = -88.0 if portrait else -80.0
-		control_bar.add_theme_constant_override("separation", 4 if compact else 6)
+		control_bar.offset_right = bottom_right
+		control_bar.offset_top = -250.0 if portrait else -244.0 if compact else -250.0
+		control_bar.offset_bottom = -174.0 if portrait else -170.0 if compact else -172.0
+		control_bar.add_theme_constant_override("separation", 3 if compact else 4)
+		control_bar.add_theme_constant_override("v_separation", 3 if compact else 4)
 		for b in _ctrl_buttons:
 			b.custom_minimum_size = Vector2(ctrl_w, 30.0 if portrait else 34.0)
 
 	if is_instance_valid(command_card):
 		command_card.scale = bottom_scale
 		command_card.offset_left = left_lane
-		command_card.offset_right = -edge
-		command_card.offset_top = -84.0 if portrait else -78.0
+		command_card.offset_right = bottom_right
+		command_card.offset_top = -86.0
 		command_card.offset_bottom = -edge
 		if is_instance_valid(command_status):
-			command_status.custom_minimum_size = Vector2(94.0 if portrait else 126.0, 0)
+			command_status.custom_minimum_size = Vector2(104.0 if portrait else 148.0, 0)
+		if is_instance_valid(command_row):
+			command_row.add_theme_constant_override("separation", 5 if compact else 8)
+			command_row.add_theme_constant_override("v_separation", 5 if compact else 6)
 		for b in _cmd_buttons:
 			b.custom_minimum_size = Vector2(cmd_w, 44.0 if portrait else 48.0)
 
@@ -734,7 +745,7 @@ func _refresh() -> void:
 	lbl_pop.text = "POP %d/%d" % [main.hud_pop(), main.hud_pop_cap()]
 	lbl_kills.text = "KILLS %d" % Game.kills
 	lbl_wave.text = "WAVE %d" % Game.wave
-	lbl_wager.text = "BET %d NET %d" % [Game.wager_stake, Game.wager_net()]
+	lbl_wager.text = "%s %d NET %d" % ["SOL" if Wallet.verified else "TKT", Game.wager_stake, Game.wager_net()]
 	_refresh_tech_summary()
 	for entry in _cost_buttons:
 		var kind: String = entry["kind"]

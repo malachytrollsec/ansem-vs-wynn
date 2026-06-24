@@ -273,12 +273,14 @@ func _refresh_wallet() -> void:
 	else:
 		wallet_btn.text = "CONNECT WALLET"
 		wallet_btn.add_theme_color_override("font_color", Game.COL_BONE)
+	_refresh_wager()
 
 func _refresh_wager() -> void:
 	if Game.wager_stake <= 0:
 		wager_lbl.text = "NO TICKET"
 	else:
-		wager_lbl.text = "%d SOL  TAX %d  WIN %d" % [Game.wager_stake, Game.wager_tax(), Game.wager_payout(true)]
+		var unit := "SOL" if Wallet.verified else "TICKET"
+		wager_lbl.text = "%s %d  TAX %d  WIN %d" % [unit, Game.wager_stake, Game.wager_tax(), Game.wager_payout(true)]
 
 func _apply_responsive_layout() -> void:
 	var vp := get_viewport().get_visible_rect().size
@@ -506,7 +508,8 @@ func _on_room_message(msg: Dictionary) -> void:
 		var stake := int(peer_wager_offer.get("stake", 0))
 		var payout := int(peer_wager_offer.get("winPayout", 0))
 		var label := String(peer_wager_offer.get("fromLabel", msg.get("from", "peer")))
-		_set_wager_status("%s offers %d SOL, win %d" % [label, stake, payout], true)
+		var unit := "SOL" if Wallet.verified else "ticket"
+		_set_wager_status("%s offers %s %d, win %d" % [label, unit, stake, payout], true)
 		Game.publish_web_state({"peerWagerOffer": peer_wager_offer})
 	elif typ == "wager-receipt":
 		var receipt = msg.get("wager", {})

@@ -21,9 +21,6 @@ body {
 	background-color: #06101f;
 	overflow: hidden;
 	touch-action: none;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 
 #canvas {
@@ -33,8 +30,6 @@ body {
 	max-width: 100vw;
 	max-height: 100vh;
 }
-
-
 
 #canvas:focus {
 	outline: none;
@@ -126,19 +121,17 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4164980,"index.wasm":38034280},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4165844,"index.wasm":38034280},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
 (function () {
-	const canvas = document.getElementById('canvas');
 	const statusOverlay = document.getElementById('status');
 	const statusProgress = document.getElementById('status-progress');
 	const statusNotice = document.getElementById('status-notice');
 
 	let initializing = true;
 	let statusMode = '';
-
 
 	function setStatusMode(mode) {
 		if (statusMode === mode || !initializing) {

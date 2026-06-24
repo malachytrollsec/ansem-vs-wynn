@@ -169,7 +169,8 @@ func _ready() -> void:
 
 	Game.log_event("%s vs %s — %s" % [Game.KINGS[Game.player_king]["name"], Game.KINGS[Game.rival_king]["name"], String(Game.arena_cfg()["label"])])
 	if Game.wager_stake > 0:
-		Game.log_event("Ticket live: stake %d, tax %d, win pays %d." % [Game.wager_stake, Game.wager_tax(), Game.wager_payout(true)])
+		var ticket_unit := "SOL" if Wallet.verified else "ticket"
+		Game.log_event("%s live: stake %d, tax %d, win pays %d." % [ticket_unit.capitalize(), Game.wager_stake, Game.wager_tax(), Game.wager_payout(true)])
 	else:
 		Game.log_event("No wager ticket locked.")
 	if Game.net_mode == "host":
@@ -1442,7 +1443,7 @@ func cmd_zoom_reset() -> void:
 	_set_camera_zoom(1.0)
 
 func hud_zoom_label() -> String:
-	return "%d%%" % int(round(zoom_level * 100.0))
+	return "%d" % int(round(zoom_level * 100.0))
 
 func _detect_threat() -> void:
 	var was_threat := threat
@@ -1912,7 +1913,8 @@ func _show_banner(text: String, col: Color) -> void:
 	vb.add_child(l)
 	var ticket := Label.new()
 	var won := text.to_lower() == "victory"
-	ticket.text = "WAGER %d | TAX %d | PAYOUT %d" % [Game.wager_stake, Game.wager_tax(), Game.wager_payout(won)]
+	var ticket_unit := "SOL" if Wallet.verified else "TICKET"
+	ticket.text = "%s %d | TAX %d | PAYOUT %d" % [ticket_unit, Game.wager_stake, Game.wager_tax(), Game.wager_payout(won)]
 	ticket.add_theme_font_override("font", load("res://assets/fonts/silkscreen.ttf"))
 	ticket.add_theme_font_size_override("font_size", 14)
 	ticket.add_theme_color_override("font_color", Game.COL_BONE)
