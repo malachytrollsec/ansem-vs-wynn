@@ -36,6 +36,13 @@ if (!html.includes("width: 100vw;")) {
   );
 }
 
+if (!html.includes("function memepireResizeCanvas")) {
+  html = html.replace(
+    "const engine = new Engine(GODOT_CONFIG);",
+    "GODOT_CONFIG.canvasResizePolicy = 0;\nconst memepireCanvas = document.getElementById('canvas');\nfunction memepireResizeCanvas() {\n\tif (!memepireCanvas) return;\n\tconst scale = Math.min(1, Math.max(0.5, Number(window.devicePixelRatio) || 1));\n\tmemepireCanvas.width = Math.round(1280 * scale);\n\tmemepireCanvas.height = Math.round(720 * scale);\n}\nwindow.addEventListener('resize', memepireResizeCanvas);\nmemepireResizeCanvas();\nconst engine = new Engine(GODOT_CONFIG);",
+  );
+}
+
 html = html.replace(/\nhtml\.memepire-low-dpr #canvas \{\n\twidth: calc\(100vw \* var\(--memepire-low-dpr-scale\)\) !important;\n\theight: calc\(100vh \* var\(--memepire-low-dpr-scale\)\) !important;\n\tmax-width: none;\n\tmax-height: none;\n\}\n/g, "\n");
 
 html = html.replace(/\n#canvas\.memepire-dpr-clamped \{\n\twidth: auto !important;\n\theight: auto !important;\n\}\n/g, "\n");

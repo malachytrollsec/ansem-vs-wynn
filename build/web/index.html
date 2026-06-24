@@ -121,8 +121,18 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4165844,"index.wasm":38034280},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4169028,"index.wasm":38034280},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
+GODOT_CONFIG.canvasResizePolicy = 0;
+const memepireCanvas = document.getElementById('canvas');
+function memepireResizeCanvas() {
+	if (!memepireCanvas) return;
+	const scale = Math.min(1, Math.max(0.5, Number(window.devicePixelRatio) || 1));
+	memepireCanvas.width = Math.round(1280 * scale);
+	memepireCanvas.height = Math.round(720 * scale);
+}
+window.addEventListener('resize', memepireResizeCanvas);
+memepireResizeCanvas();
 const engine = new Engine(GODOT_CONFIG);
 
 (function () {

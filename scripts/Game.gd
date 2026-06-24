@@ -223,7 +223,7 @@ func _post_web_result(king: String, won: bool, meta: Dictionary) -> void:
 		"tax": wager_tax(),
 		"payout": payout,
 		"wallet": Wallet.address if Wallet.connected else "",
-		"walletLabel": "Verified wallet" if Wallet.verified else "",
+		"walletLabel": Wallet.short() if Wallet.verified else "Ticket mode",
 		"verified": Wallet.verified,
 	}
 	var wallet_token := Wallet.token if Wallet.connected else ""

@@ -13,6 +13,8 @@ var wager_lbl: Label
 var wallet_btn: Button
 var mp_btn: Button
 var leaderboard_panel: PanelContainer
+var leaderboard_list: VBoxContainer
+var leaderboard_status_lbl: Label
 var center_holder: CenterContainer
 var menu_box: VBoxContainer
 var title_logo: TextureRect
@@ -28,6 +30,7 @@ var wager_decline_btn: Button
 var peer_wager_offer := {}
 var wager_ticket_accepted := false
 var _last_offer_key := ""
+var _leaderboard_sync_id := 0
 
 const UI_RD_PANEL := "res://assets/ui/ui_rd_panel_medium.png"
 const UI_RD_PANEL_LARGE := "res://assets/ui/ui_rd_panel_large.png"
@@ -108,7 +111,7 @@ func _ready() -> void:
 	add_child(mp_btn)
 	mp_btn.pressed.connect(_toggle_lobby)
 
-	# local leaderboard (top-left)
+	# persistent leaderboard (top-left, local fallback while the web board loads)
 	leaderboard_panel = PanelContainer.new()
 	leaderboard_panel.add_theme_stylebox_override("panel", _menu_panel())
 	leaderboard_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
@@ -123,11 +126,13 @@ func _ready() -> void:
 	var lbh := _label("LEADERBOARD", f_ui, 11, Game.COL_ACCENT_BRIGHT)
 	lbh.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	lbvb.add_child(lbh)
-	for k in Game.KINGS.keys():
-		var rec: Dictionary = Game.board.get(k, {"wins": 0, "losses": 0})
-		var row2 := _label("%-10s %2dW / %2dL" % [String(Game.KINGS[k]["name"]), int(rec["wins"]), int(rec["losses"])], f_ui, 9, Game.KINGS[k]["color"])
-		row2.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		lbvb.add_child(row2)
+	leaderboard_status_lbl = _label("LOCAL RECORDS", f_ui, 8, Game.COL_MUTED)
+	leaderboard_status_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	lbvb.add_child(leaderboard_status_lbl)
+	leaderboard_list = VBoxContainer.new()
+	leaderboard_list.add_theme_constant_override("separation", 2)
+	lbvb.add_child(leaderboard_list)
+	_refresh_leaderboard_panel()
 
 	center_holder = CenterContainer.new()
 	center_holder.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -243,6 +248,7 @@ func _ready() -> void:
 	_highlight()
 	_refresh_setup()
 	_apply_responsive_layout()
+	_request_web_leaderboard()
 	if "--shot" in OS.get_cmdline_args() or "--shot" in OS.get_cmdline_user_args():
 		_capture()
 	if "--room-links-smoke" in OS.get_cmdline_args() or "--room-links-smoke" in OS.get_cmdline_user_args():
@@ -265,8 +271,12 @@ func _menu_panel() -> StyleBox:
 
 func _refresh_wallet() -> void:
 	if Wallet.connected:
-		wallet_btn.text = ("VERIFIED  " if Wallet.verified else "WALLET  ") + Wallet.short()
-		wallet_btn.add_theme_color_override("font_color", Game.COL_ACCENT_BRIGHT)
+		if Wallet.verified:
+			wallet_btn.text = "SOL  " + Wallet.short()
+			wallet_btn.add_theme_color_override("font_color", Game.COL_ACCENT_BRIGHT)
+		else:
+			wallet_btn.text = "TICKET MODE"
+			wallet_btn.add_theme_color_override("font_color", Game.COL_MUTED)
 	elif Wallet.last_error != "":
 		wallet_btn.text = "WALLET ERROR"
 		wallet_btn.add_theme_color_override("font_color", Game.COL_ENEMY)
@@ -275,7 +285,101 @@ func _refresh_wallet() -> void:
 		wallet_btn.add_theme_color_override("font_color", Game.COL_BONE)
 	_refresh_wager()
 
+func _refresh_leaderboard_panel(entries := [], remote := false) -> void:
+	if not is_instance_valid(leaderboard_list):
+		return
+	for child in leaderboard_list.get_children():
+		child.queue_free()
+	if is_instance_valid(leaderboard_status_lbl):
+		leaderboard_status_lbl.text = "WEB BOARD" if remote else "LOCAL RECORDS"
+	var printed := 0
+	if remote:
+		for item in entries:
+			if typeof(item) != TYPE_DICTIONARY:
+				continue
+			var row := _leaderboard_web_row(item, printed + 1)
+			leaderboard_list.add_child(row)
+			printed += 1
+			if printed >= 5:
+				break
+	if printed == 0:
+		if remote and is_instance_valid(leaderboard_status_lbl):
+			leaderboard_status_lbl.text = "WEB BOARD EMPTY"
+		for k in Game.KINGS.keys():
+			var rec: Dictionary = Game.board.get(k, {"wins": 0, "losses": 0})
+			var row2 := _label("%-10s %2dW / %2dL" % [String(Game.KINGS[k]["name"]), int(rec["wins"]), int(rec["losses"])], f_ui, 9, Game.KINGS[k]["color"])
+			row2.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+			leaderboard_list.add_child(row2)
+
+func _leaderboard_web_row(item: Dictionary, rank: int) -> Label:
+	var king_id := _valid_king(String(item.get("kingId", item.get("king", ""))))
+	var col: Color = Game.KINGS.get(king_id, {}).get("color", Game.COL_BONE)
+	var name := String(Game.KINGS.get(king_id, {}).get("name", item.get("king", "?")))
+	var score := int(item.get("score", 0))
+	var result := String(item.get("result", "")).to_upper().left(1)
+	var tag := "SOL" if bool(item.get("verified", false)) else "TKT"
+	var row := _label("#%d %-8s %s %4d %s" % [rank, name.left(8), result, score, tag], f_ui, 9, col)
+	row.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	row.clip_text = true
+	return row
+
+func _request_web_leaderboard() -> void:
+	if not OS.has_feature("web"):
+		return
+	_leaderboard_sync_id += 1
+	if is_instance_valid(leaderboard_status_lbl):
+		leaderboard_status_lbl.text = "SYNCING WEB BOARD"
+	JavaScriptBridge.eval("""
+(function(){
+  window.__memepireLeaderboardStatus = 'loading';
+  fetch('/leaderboard', {cache: 'no-store'}).then(function(res){ return res.json(); }).then(function(data){
+    window.__memepireLeaderboard = data || {};
+    window.__memepireLeaderboardStatus = 'ready';
+    window.__memepireState = Object.assign(window.__memepireState || {}, {
+      leaderboardLoaded: true,
+      leaderboardRows: ((data && data.entries) || []).length
+    });
+  }).catch(function(err){
+    window.__memepireLeaderboardStatus = 'error';
+    window.__memepireLeaderboardError = String(err && err.message || err);
+  });
+  return true;
+})()
+	""", true)
+	_poll_web_leaderboard(_leaderboard_sync_id, 0)
+
+func _poll_web_leaderboard(sync_id: int, attempt: int) -> void:
+	await get_tree().create_timer(0.35).timeout
+	if sync_id != _leaderboard_sync_id:
+		return
+	if _read_web_leaderboard():
+		return
+	if attempt < 16:
+		_poll_web_leaderboard(sync_id, attempt + 1)
+	elif is_instance_valid(leaderboard_status_lbl):
+		leaderboard_status_lbl.text = "LOCAL RECORDS"
+
+func _read_web_leaderboard() -> bool:
+	if not OS.has_feature("web"):
+		return false
+	var raw = JavaScriptBridge.eval("JSON.stringify(window.__memepireLeaderboard || {})", true)
+	if raw == null:
+		return false
+	var text := String(raw)
+	if text == "" or text == "{}":
+		return false
+	var parsed = JSON.parse_string(text)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return false
+	var entries = parsed.get("entries", [])
+	if typeof(entries) != TYPE_ARRAY:
+		return false
+	_refresh_leaderboard_panel(entries, true)
+	return true
+
 func _refresh_wager() -> void:
+	if not is_instance_valid(wager_lbl):
+		return
 	if Game.wager_stake <= 0:
 		wager_lbl.text = "NO TICKET"
 	else:
