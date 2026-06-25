@@ -131,20 +131,32 @@ func _flat_panel(hi := false) -> StyleBoxFlat:
 	var bg := Game.COL_PANEL_HI if hi else Game.COL_PANEL
 	bg.a = 0.94
 	sb.bg_color = bg
-	sb.border_color = Game.COL_EDGE
-	sb.set_border_width_all(2)
+	sb.border_color = Game.COL_ACCENT if hi else Color(Game.COL_EDGE, 0.92)
+	sb.set_border_width_all(1)
 	sb.set_corner_radius_all(0)
-	sb.content_margin_left = 8
-	sb.content_margin_right = 8
-	sb.content_margin_top = 5
-	sb.content_margin_bottom = 5
-	# top cyan highlight line
+	sb.content_margin_left = 9
+	sb.content_margin_right = 9
+	sb.content_margin_top = 6
+	sb.content_margin_bottom = 6
 	sb.shadow_color = Color(Game.COL_ACCENT_BRIGHT, 0.18)
 	return sb
 
 func _panel(hi := false) -> StyleBox:
-	var tint := Color(1.0, 1.0, 1.0, 1.0) if hi else Color(0.92, 0.96, 1.0, 1.0)
-	return _texture_style(UI_RD_PANEL_LARGE if hi else UI_RD_PANEL, 28.0 if hi else 22.0, 7.0, tint)
+	return _flat_panel(hi)
+
+func _button_panel(hi := false, pressed := false) -> StyleBoxFlat:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color("122438", 0.94) if hi else Color("0a1825", 0.92)
+	if pressed:
+		sb.bg_color = Color("07111c", 0.98)
+	sb.border_color = Game.COL_ACCENT_BRIGHT if hi else Color(Game.COL_EDGE, 0.95)
+	sb.set_border_width_all(1)
+	sb.set_corner_radius_all(0)
+	sb.content_margin_left = 7
+	sb.content_margin_right = 7
+	sb.content_margin_top = 5
+	sb.content_margin_bottom = 5
+	return sb
 
 func _chip(text: String) -> PanelContainer:
 	var p := PanelContainer.new()
@@ -160,21 +172,29 @@ func _chip(text: String) -> PanelContainer:
 func _value_chip(text: String, icon_key := "") -> Array:
 	var p := PanelContainer.new()
 	p.add_theme_stylebox_override("panel", _panel())
+	p.custom_minimum_size = Vector2(126, 36) if icon_key != "" else Vector2(104, 36)
 	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 5)
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 4)
 	p.add_child(row)
 	if icon_key != "" and RESOURCE_ICONS.has(icon_key):
 		var icon := TextureRect.new()
 		icon.texture = load(RESOURCE_ICONS[icon_key])
-		icon.custom_minimum_size = Vector2(18, 18)
+		icon.custom_minimum_size = Vector2(20, 20)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(icon)
 	var l := Label.new()
 	l.text = text
 	l.add_theme_font_override("font", f_ui)
-	l.add_theme_font_size_override("font_size", 12)
+	l.add_theme_font_size_override("font_size", 11)
 	l.add_theme_color_override("font_color", Game.COL_BONE)
+	l.custom_minimum_size = Vector2(74, 0) if icon_key != "" else Vector2(86, 0)
 	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.clip_text = true
 	row.add_child(l)
 	return [p, l]
 
@@ -186,12 +206,9 @@ func _accent_button(text: String) -> Button:
 	b.add_theme_color_override("font_color", Game.COL_BONE)
 	b.add_theme_color_override("font_hover_color", Game.COL_ACCENT_BRIGHT)
 	b.custom_minimum_size = Vector2(96, 34)
-	var normal := _texture_style(UI_RD_BUTTON, 18.0, 5.0)
-	var hover := _texture_style(UI_RD_BUTTON_HOVER, 18.0, 5.0, Color(1.08, 1.08, 1.08, 1.0))
-	var pressed := _texture_style(UI_RD_BUTTON, 18.0, 5.0, Color(0.72, 0.78, 0.9, 1.0))
-	b.add_theme_stylebox_override("normal", normal)
-	b.add_theme_stylebox_override("hover", hover)
-	b.add_theme_stylebox_override("pressed", pressed)
+	b.add_theme_stylebox_override("normal", _button_panel(false))
+	b.add_theme_stylebox_override("hover", _button_panel(true))
+	b.add_theme_stylebox_override("pressed", _button_panel(true, true))
 	return b
 
 func _apply_command_icon(b: Button, kind: String) -> void:
@@ -203,6 +220,7 @@ func _apply_command_icon(b: Button, kind: String) -> void:
 		return
 	b.icon = tex
 	b.expand_icon = false
+	b.add_theme_constant_override("icon_max_width", 28)
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.add_theme_constant_override("icon_spacing", 5)
 
@@ -215,6 +233,7 @@ func _apply_control_icon(b: Button, kind: String) -> void:
 		return
 	b.icon = tex
 	b.expand_icon = false
+	b.add_theme_constant_override("icon_max_width", 24)
 	b.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	b.add_theme_constant_override("icon_spacing", 3)
 
@@ -225,30 +244,19 @@ func _build_topbar() -> void:
 	bar.offset_left = 10
 	bar.offset_top = 8
 	bar.offset_right = -10
-	bar.add_theme_constant_override("separation", 8)
-	bar.add_theme_constant_override("v_separation", 6)
+	bar.add_theme_constant_override("separation", 6)
+	bar.add_theme_constant_override("v_separation", 5)
 	add_child(bar)
-
-	# brand
-	var brand := Label.new()
-	brand.text = "AGE OF MEMEPIRES"
-	brand.add_theme_font_override("font", f_display)
-	brand.add_theme_font_size_override("font_size", 14)
-	brand.add_theme_color_override("font_color", Game.COL_ACCENT_BRIGHT)
-	var bp := PanelContainer.new()
-	bp.add_theme_stylebox_override("panel", _panel())
-	bp.add_child(brand)
-	bar.add_child(bp)
 
 	var r1 = _value_chip("FOOD 0", "food"); lbl_food = r1[1]; bar.add_child(r1[0])
 	var r2 = _value_chip("TIMBER 0", "timber"); lbl_timber = r2[1]; bar.add_child(r2[0])
 	var r3 = _value_chip("MEMP 0", "memp"); lbl_memp = r3[1]; bar.add_child(r3[0])
 	var r4 = _value_chip("POP 0/0"); lbl_pop = r4[1]; bar.add_child(r4[0])
-	var r5 = _value_chip("KILLS 0"); lbl_kills = r5[1]; bar.add_child(r5[0])
+	var r5 = _value_chip("KO 0"); lbl_kills = r5[1]; bar.add_child(r5[0])
 	var rw = _value_chip("WAVE 0"); lbl_wave = rw[1]; bar.add_child(rw[0])
-	var rb = _value_chip("BET 0"); lbl_wager = rb[1]; bar.add_child(rb[0])
-	var r6 = _value_chip("QUEUE 0"); lbl_queue = r6[1]; bar.add_child(r6[0])
-	var r7 = _value_chip("BASE CLEAR"); lbl_threat = r7[1]; bar.add_child(r7[0])
+	var rb = _value_chip("T0 N0"); lbl_wager = rb[1]; bar.add_child(rb[0])
+	var r6 = _value_chip("Q 0"); lbl_queue = r6[1]; bar.add_child(r6[0])
+	var r7 = _value_chip("SAFE"); lbl_threat = r7[1]; bar.add_child(r7[0])
 
 func _build_command_card() -> void:
 	var card := PanelContainer.new()
@@ -339,14 +347,16 @@ func _section_label(text: String) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.add_theme_font_override("font", f_ui)
-	l.add_theme_font_size_override("font_size", 12)
+	l.add_theme_font_size_override("font_size", 10)
 	l.add_theme_color_override("font_color", Game.COL_ACCENT_BRIGHT)
+	l.clip_text = true
 	return l
 
 func _side_button(text: String, kind: String, action: Callable) -> Button:
 	var b := _accent_button(text)
 	_apply_command_icon(b, kind)
-	b.custom_minimum_size = Vector2(174, 31)
+	b.add_theme_font_size_override("font_size", 9)
+	b.custom_minimum_size = Vector2(154, 36)
 	b.tooltip_text = "%s: %s" % [text, Game.cost_text(kind)]
 	b.pressed.connect(action)
 	_cost_buttons.append({"btn": b, "kind": kind, "label": text})
@@ -363,17 +373,17 @@ func _build_side_panel() -> void:
 	panel.offset_top = 126
 	add_child(panel)
 	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 6)
+	vb.add_theme_constant_override("separation", 5)
 	panel.add_child(vb)
 	vb.add_child(_section_label("BUILD"))
-	vb.add_child(_side_button("HOUSE  +6 POP", "house", func(): main.begin_build("house")))
+	vb.add_child(_side_button("HOUSE", "house", func(): main.begin_build("house")))
 	vb.add_child(_side_button("FORGE", "forge", func(): main.begin_build("forge")))
 	vb.add_child(_side_button("TOWER", "tower", func(): main.begin_build("tower")))
 	vb.add_child(_side_button("MARKET", "market", func(): main.begin_build("market")))
 	vb.add_child(_section_label("TECH"))
-	vb.add_child(_side_button("ATTACK  +3", "upgrade_atk", func(): main.do_research("upgrade_atk")))
-	vb.add_child(_side_button("ARMOR  +2", "upgrade_armor", func(): main.do_research("upgrade_armor")))
-	vb.add_child(_side_button("ECONOMY  +25%", "upgrade_eco", func(): main.do_research("upgrade_eco")))
+	vb.add_child(_side_button("ATK +3", "upgrade_atk", func(): main.do_research("upgrade_atk")))
+	vb.add_child(_side_button("ARM +2", "upgrade_armor", func(): main.do_research("upgrade_armor")))
+	vb.add_child(_side_button("ECO +25%", "upgrade_eco", func(): main.do_research("upgrade_eco")))
 
 func _portrait_build_button(text: String, kind: String, action: Callable) -> Button:
 	var b := _accent_button(text)
@@ -420,12 +430,9 @@ func _ctrl_button(text: String, icon_key: String, action: Callable, tip := "") -
 	b.add_theme_color_override("font_hover_color", Game.COL_ACCENT_BRIGHT)
 	b.custom_minimum_size = Vector2(44, 34)
 	_apply_control_icon(b, icon_key)
-	var sb := _texture_style(UI_RD_BUTTON, 12.0, 5.0, Color(0.9, 0.94, 1.0, 1.0))
-	var hov := _texture_style(UI_RD_BUTTON_HOVER, 12.0, 5.0, Color(1.08, 1.08, 1.08, 1.0))
-	var prs := _texture_style(UI_RD_BUTTON, 12.0, 5.0, Color(0.68, 0.72, 0.82, 1.0))
-	b.add_theme_stylebox_override("normal", sb)
-	b.add_theme_stylebox_override("hover", hov)
-	b.add_theme_stylebox_override("pressed", prs)
+	b.add_theme_stylebox_override("normal", _button_panel(false))
+	b.add_theme_stylebox_override("hover", _button_panel(true))
+	b.add_theme_stylebox_override("pressed", _button_panel(true, true))
 	b.tooltip_text = tip if tip != "" else text.capitalize()
 	b.pressed.connect(action)
 	_ctrl_buttons.append(b)
@@ -467,10 +474,10 @@ func _process(_delta: float) -> void:
 		return
 	_refresh_queue_summary()
 	if main.threat:
-		lbl_threat.text = "UNDER ATTACK"
+		lbl_threat.text = "ALERT"
 		lbl_threat.add_theme_color_override("font_color", Color("ff8a6a"))
 	else:
-		lbl_threat.text = "BASE CLEAR"
+		lbl_threat.text = "SAFE"
 		lbl_threat.add_theme_color_override("font_color", Game.COL_BONE)
 	if main.build_mode != "":
 		lbl_mode.text = "PLACING %s" % String(main.build_mode).to_upper()
@@ -743,9 +750,9 @@ func _refresh() -> void:
 	lbl_timber.text = "TIMBER %d" % main.hud_timber()
 	lbl_memp.text = "MEMP %d" % main.hud_memp()
 	lbl_pop.text = "POP %d/%d" % [main.hud_pop(), main.hud_pop_cap()]
-	lbl_kills.text = "KILLS %d" % Game.kills
+	lbl_kills.text = "KO %d" % Game.kills
 	lbl_wave.text = "WAVE %d" % Game.wave
-	lbl_wager.text = "%s %d NET %d" % ["SOL" if Wallet.verified else "TKT", Game.wager_stake, Game.wager_net()]
+	lbl_wager.text = "%s%d N%d" % ["S" if Wallet.verified else "T", Game.wager_stake, Game.wager_net()]
 	_refresh_tech_summary()
 	for entry in _cost_buttons:
 		var kind: String = entry["kind"]
@@ -815,11 +822,11 @@ func _refresh_queue_summary() -> void:
 	var name := String(summary.get("name", ""))
 	var pct := int(summary.get("pct", 0))
 	if count <= 0:
-		lbl_queue.text = "QUEUE 0"
+		lbl_queue.text = "Q 0"
 		lbl_queue.add_theme_color_override("font_color", Game.COL_BONE)
 	elif name == "":
-		lbl_queue.text = "QUEUE %d" % count
+		lbl_queue.text = "Q %d" % count
 		lbl_queue.add_theme_color_override("font_color", Game.COL_ACCENT_BRIGHT)
 	else:
-		lbl_queue.text = "QUEUE %d %s %d%%" % [count, name, pct]
+		lbl_queue.text = "Q%d %s %d%%" % [count, name.left(3).to_upper(), pct]
 		lbl_queue.add_theme_color_override("font_color", Game.COL_ACCENT_BRIGHT)

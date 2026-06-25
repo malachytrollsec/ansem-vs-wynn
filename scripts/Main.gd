@@ -832,17 +832,27 @@ func _double_click_select_smoke() -> void:
 	var selected_after_double := _selected().size()
 	var base_ok := selected_after_double == expected and expected >= 2
 	var soldier: Unit = null
+	var visible := _visible_world_rect().grow(80.0)
 	for u in units:
-		if _node_alive(u) and u.team == 0 and u.kind == "swordsman":
+		if _node_alive(u) and u.team == 0 and u.kind == "swordsman" and visible.has_point(u.position):
 			soldier = u
 			break
+	if soldier == null:
+		soldier = _spawn_unit(Game.player_king, "swordsman", 0, camera.position + Vector2(34, 0), 0, false)
+		visible = _visible_world_rect().grow(80.0)
 	if soldier != null:
 		sel_start = soldier.position
 		sel_now = soldier.position
 		_finish_selection(true, true)
-	var additive_ok := soldier != null and soldier.selected and _selected().size() == expected + 1
+	var expected_additive := expected
+	if soldier != null:
+		for u in units:
+			if _node_alive(u) and u.team == 0 and u.kind == soldier.kind and visible.has_point(u.position):
+				expected_additive += 1
+	var selected_after_additive := _selected().size()
+	var additive_ok := soldier != null and soldier.selected and selected_after_additive == expected_additive
 	var ok := base_ok and additive_ok
-	print("DOUBLE_CLICK_SELECT_SMOKE target=true selected=%d expected=%d additive=%s ok=%s" % [selected_after_double, expected, str(additive_ok).to_lower(), str(ok).to_lower()])
+	print("DOUBLE_CLICK_SELECT_SMOKE target=true selected=%d expected=%d selectedAdditive=%d expectedAdditive=%d soldier=%s additive=%s ok=%s" % [selected_after_double, expected, selected_after_additive, expected_additive, str(soldier != null and soldier.selected).to_lower(), str(additive_ok).to_lower(), str(ok).to_lower()])
 	get_tree().quit(0 if ok else 1)
 
 func _minimap_command_smoke() -> void:

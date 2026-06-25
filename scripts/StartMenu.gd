@@ -128,9 +128,9 @@ func _ready() -> void:
 	leaderboard_panel.add_theme_stylebox_override("panel", _menu_panel())
 	leaderboard_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	leaderboard_panel.offset_left = 16
-	leaderboard_panel.offset_right = 318
+	leaderboard_panel.offset_right = 360
 	leaderboard_panel.offset_top = 16
-	leaderboard_panel.custom_minimum_size = Vector2(302, 0)
+	leaderboard_panel.custom_minimum_size = Vector2(330, 0)
 	add_child(leaderboard_panel)
 	var lbvb := VBoxContainer.new()
 	lbvb.add_theme_constant_override("separation", 4)
@@ -159,6 +159,7 @@ func _ready() -> void:
 	title_logo.texture = load(MAIN_MENU_LOGO)
 	title_logo.custom_minimum_size = Vector2(520, 144)
 	title_logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	title_logo.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	title_logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	vb.add_child(title_logo)
 	vb.add_child(_label("FOUR MEME KINGS. ONE PIXEL WAR.", f_ui, 13, Game.COL_MUTED))
@@ -167,13 +168,15 @@ func _ready() -> void:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 14)
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	vb.add_child(row)
 	for k in Game.KINGS.keys():
 		row.add_child(_card(k))
 
-	var setup_row := HBoxContainer.new()
+	var setup_row := VBoxContainer.new()
 	setup_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	setup_row.add_theme_constant_override("separation", 34)
+	setup_row.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	setup_row.add_theme_constant_override("separation", 8)
 	vb.add_child(setup_row)
 
 	var pressure_col := VBoxContainer.new()
@@ -237,8 +240,10 @@ func _ready() -> void:
 	start.text = "START WAR"
 	start.add_theme_font_override("font", f_ui)
 	start.add_theme_font_size_override("font_size", 16)
-	start.add_theme_color_override("font_color", Game.COL_INK)
+	start.add_theme_color_override("font_color", Game.COL_BONE)
+	start.add_theme_color_override("font_hover_color", Game.COL_ACCENT_BRIGHT)
 	start.custom_minimum_size = Vector2(760, 50)
+	start.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	start.add_theme_stylebox_override("normal", _button_style(true))
 	start.add_theme_stylebox_override("hover", _button_style(true))
 	start.add_theme_stylebox_override("pressed", _button_style(true, true))
@@ -271,9 +276,10 @@ func _small_button(text: String) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.add_theme_font_override("font", f_ui)
-	b.add_theme_font_size_override("font_size", 10)
+	b.add_theme_font_size_override("font_size", 11)
 	b.add_theme_color_override("font_color", Game.COL_BONE)
-	b.custom_minimum_size = Vector2(112, 34)
+	b.custom_minimum_size = Vector2(120, 36)
+	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	b.add_theme_stylebox_override("normal", _button_style(false))
 	b.add_theme_stylebox_override("hover", _button_style(true))
 	b.add_theme_stylebox_override("pressed", _button_style(false, true))
@@ -442,14 +448,14 @@ func _apply_responsive_layout() -> void:
 		center_holder.offset_bottom = -lift
 	if is_instance_valid(menu_box):
 		menu_box.pivot_offset = menu_box.size * 0.5
-		menu_box.scale = Vector2(1.22, 1.22) if portrait else Vector2.ONE
+		menu_box.scale = Vector2(1.22, 1.22) if portrait else Vector2(1.08, 1.08)
 	if is_instance_valid(title_logo):
-		title_logo.custom_minimum_size = Vector2(330, 110) if portrait else Vector2(520, 144)
+		title_logo.custom_minimum_size = Vector2(330, 110) if portrait else Vector2(580, 158)
 	if is_instance_valid(leaderboard_panel):
 		leaderboard_panel.visible = not portrait
 	if is_instance_valid(wallet_btn):
 		var top := 10.0 if portrait else 16.0
-		var width := 156.0 if portrait else 208.0
+		var width := 168.0 if portrait else 236.0
 		wallet_btn.offset_left = -width - 10.0
 		wallet_btn.offset_right = -10.0
 		wallet_btn.offset_top = top
@@ -457,7 +463,7 @@ func _apply_responsive_layout() -> void:
 		wallet_btn.custom_minimum_size = Vector2(width, 30)
 	if is_instance_valid(mp_btn):
 		var top := 46.0 if portrait else 56.0
-		var width := 156.0 if portrait else 208.0
+		var width := 168.0 if portrait else 236.0
 		mp_btn.offset_left = -width - 10.0
 		mp_btn.offset_right = -10.0
 		mp_btn.offset_top = top
@@ -912,7 +918,8 @@ func _label(text: String, font: FontFile, size: int, col: Color) -> Label:
 func _card(king: String) -> Button:
 	var data: Dictionary = Game.KINGS[king]
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(170, 178)
+	b.custom_minimum_size = Vector2(188, 196)
+	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	b.add_theme_stylebox_override("normal", _texture_style(UI_RD_PANEL, 22.0, 8.0))
 	b.add_theme_stylebox_override("hover", _texture_style(UI_RD_PANEL_LARGE, 26.0, 8.0, Color(1.08, 1.08, 1.08, 1.0)))
 	b.add_theme_stylebox_override("pressed", _texture_style(UI_RD_PANEL, 22.0, 8.0, Color(0.78, 0.82, 0.92, 1.0)))
@@ -937,14 +944,14 @@ func _card(king: String) -> Button:
 
 	var port := TextureRect.new()
 	port.texture = load("res://assets/portraits/king_portrait_%s.png" % king)
-	port.custom_minimum_size = Vector2(76, 72)
+	port.custom_minimum_size = Vector2(88, 82)
 	port.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	port.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(port)
-	var nm := _label(data["name"], f_ui, 11, data["color"])
+	var nm := _label(data["name"], f_ui, 12, data["color"])
 	nm.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(nm)
-	var kd := _label(data["kingdom"], f_ui, 8, Game.COL_MUTED)
+	var kd := _label(data["kingdom"], f_ui, 9, Game.COL_MUTED)
 	kd.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(kd)
 	return b
