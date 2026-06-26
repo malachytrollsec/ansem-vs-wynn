@@ -2,7 +2,7 @@ extends Node2D
 class_name Unit
 ## RTS unit (villager / swordsman / archer): move, gather, auto-combat.
 
-var king := "fartcoin"
+var king := "doge"
 var kind := "villager"
 var team := 0          # 0 = player, 1 = rival
 var speed := 92.0
@@ -64,32 +64,34 @@ func _ready() -> void:
 	_sync_draw_order()
 
 func _sprite_scale() -> float:
-	if king == "doge" and kind == "siege":
-		return 1.24
-	if king == "doge" and kind == "lancer":
-		return 1.26
 	if kind == "siege":
-		return 1.55
-	if king == "doge" and ["villager", "swordsman", "archer"].has(kind):
-		return 1.36
+		return 1.62
 	if kind == "lancer":
-		return 1.58
-	return 1.55
+		return 1.82
+	if kind == "villager":
+		return 1.64
+	return 1.72
 
 func click_radius() -> float:
-	return 31.0 if kind == "siege" else 26.0
+	if kind == "siege":
+		return 33.0
+	if kind == "lancer":
+		return 30.0
+	return 28.0
 
 func _selection_radius() -> float:
-	if king == "doge":
-		return 28.0 if kind == "siege" else 24.0
-	return 28.0 if kind == "siege" else 23.0
+	if kind == "siege":
+		return 30.0
+	if kind == "lancer":
+		return 28.0
+	return 26.0
 
 func _health_bar_y() -> float:
 	if kind == "siege":
-		return -42.0
-	if king == "doge":
-		return -36.0
-	return -38.0
+		return -46.0
+	if kind == "lancer":
+		return -45.0
+	return -42.0
 
 func order_move(p: Vector2) -> void:
 	target = p

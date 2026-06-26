@@ -3,39 +3,120 @@ import { join } from "node:path";
 
 const root = new URL("..", import.meta.url).pathname;
 const htmlPath = join(root, "build/web/index.html");
+const jsPath = join(root, "build/web/index.js");
 let html = await readFile(htmlPath, "utf8");
+const js = await readFile(jsPath, "utf8");
 
 html = html.replace("background-color: black;", "background-color: #06101f;");
-
-if (!html.includes("html, body {\n\twidth: 100%;\n\theight: 100%;\n}")) {
-  html = html.replace(
-    "html, body, #canvas {\n\tmargin: 0;\n\tpadding: 0;\n\tborder: 0;\n}\n\nbody {",
-    "html, body, #canvas {\n\tmargin: 0;\n\tpadding: 0;\n\tborder: 0;\n}\n\nhtml, body {\n\twidth: 100%;\n\theight: 100%;\n}\n\nbody {",
-  );
-}
-
-html = html.replace(/"canvasResizePolicy":2/g, '"canvasResizePolicy":0');
-
-html = html.replace(/\n#canvas \{\n\tdisplay: block;\n(?:\tposition: absolute;\n\tleft: 0;\n\ttop: 0;\n\twidth: 1280px;\n\theight: 720px;\n\tmax-width: none;\n\tmax-height: none;\n\ttransform-origin: top left;\n\timage-rendering: pixelated;\n|\tposition: absolute;\n\tleft: 50%;\n\ttop: 50%;\n\twidth: 1280px;\n\theight: 720px;\n\tmax-width: calc\(100vw - 24px\);\n\tmax-height: calc\(100vh - 24px\);\n\ttransform: translate\(-50%, -50%\);\n(?:\tcontain: strict;\n\tclip-path: inset\(0\);\n)?\timage-rendering: pixelated;\n|\twidth: 100vw;\n\theight: 100vh;\n\tmax-width: 100vw;\n\tmax-height: 100vh;\n)?\}\n/g, "\n#canvas {\n\tdisplay: block;\n\tposition: absolute;\n\tleft: 50%;\n\ttop: 50%;\n\twidth: 1280px;\n\theight: 720px;\n\tmax-width: calc(100vw - 24px);\n\tmax-height: calc(100vh - 24px);\n\ttransform: translate(-50%, -50%);\n\tcontain: strict;\n\tclip-path: inset(0);\n\timage-rendering: pixelated;\n}\n");
-
-const sizeScript = "const memepireCanvas = document.getElementById('canvas');\nfunction memepireResizeCanvas() {\n\tif (!memepireCanvas) return;\n\tmemepireCanvas.width = 1280;\n\tmemepireCanvas.height = 720;\n\tconst dpr = Number(window.devicePixelRatio) || 1;\n\tconst pixelSafeScale = dpr > 0 && dpr < 1 ? dpr : 1;\n\tconst fitScale = Math.min(1, (window.innerWidth - 24) / 1280, (window.innerHeight - 24) / 720);\n\tconst scale = Math.min(pixelSafeScale, fitScale);\n\tconst cssWidth = Math.max(1, Math.floor(1280 * scale));\n\tconst cssHeight = Math.max(1, Math.floor(720 * scale));\n\tmemepireCanvas.style.width = cssWidth + 'px';\n\tmemepireCanvas.style.height = cssHeight + 'px';\n}\nwindow.addEventListener('resize', memepireResizeCanvas);\nmemepireResizeCanvas();\n";
+html = html.replace(/"canvasResizePolicy":[012]/g, '"canvasResizePolicy":0');
 
 html = html.replace(
-  /const memepireCanvas = document\.getElementById\('canvas'\);\nfunction memepireResizeCanvas\(\) \{[\s\S]*?\n\}\nwindow\.addEventListener\('resize', memepireResizeCanvas\);\nmemepireResizeCanvas\(\);\n/g,
-  sizeScript,
-);
-
-if (!html.includes("function memepireResizeCanvas")) {
-  html = html.replace("const engine = new Engine(GODOT_CONFIG);\n", `const engine = new Engine(GODOT_CONFIG);\n${sizeScript}`);
+  /html, body, #canvas \{[\s\S]*?\n\}\n\n(?:html, body \{[\s\S]*?\n\}\n\n)?body \{[\s\S]*?\n\}\n\n#canvas \{[\s\S]*?\n\}\n\n#canvas:focus \{/,
+  `html, body, #canvas {
+\tmargin: 0;
+\tpadding: 0;
+\tborder: 0;
 }
 
-html = html.replace(/\nGODOT_CONFIG\.canvasResizePolicy = 0;\nconst memepireCanvas = document\.getElementById\('canvas'\);\nfunction memepireResizeCanvas\(\) \{\n\tif \(!memepireCanvas\) return;\n\tconst scale = Math\.min\(1, Math\.max\(0\.5, Number\(window\.devicePixelRatio\) \|\| 1\)\);\n\tmemepireCanvas\.width = Math\.round\(1280 \* scale\);\n\tmemepireCanvas\.height = Math\.round\(720 \* scale\);\n\}\nwindow\.addEventListener\('resize', memepireResizeCanvas\);\nmemepireResizeCanvas\(\);\n/g, "\n");
+html, body {
+\twidth: 100%;
+\theight: 100%;
+}
 
-html = html.replace(/\nGODOT_CONFIG\.canvasResizePolicy = 0;\nconst memepireCanvas = document\.getElementById\('canvas'\);\nfunction memepireResizeCanvas\(\) \{\n\tif \(!memepireCanvas\) return;\n\tconst width = Math\.max\(1, Math\.round\(window\.innerWidth \|\| 1280\)\);\n\tconst height = Math\.max\(1, Math\.round\(window\.innerHeight \|\| 720\)\);\n\tmemepireCanvas\.width = width;\n\tmemepireCanvas\.height = height;\n\tmemepireCanvas\.style\.width = `\$\{width\}px`;\n\tmemepireCanvas\.style\.height = `\$\{height\}px`;\n\}\nwindow\.addEventListener\('resize', memepireResizeCanvas\);\nmemepireResizeCanvas\(\);\n/g, "\n");
+body {
+\tcolor: white;
+\tbackground-color: #06101f;
+\toverflow: hidden;
+\ttouch-action: none;
+}
 
-html = html.replace(/\n#canvas\.memepire-landscape-framed \{\n\twidth: 100vw !important;\n\theight: calc\(100vw \* 9 \/ 16\) !important;\n\tmax-height: 100vh;\n\}\n/g, "\n");
+#memepire-viewport {
+\tposition: fixed;
+\tinset: 0;
+\twidth: 100vw !important;
+\theight: 100vh !important;
+\toverflow: hidden;
+\tbackground-color: #06101f;
+\tdisplay: flex;
+\talign-items: center;
+\tjustify-content: center;
+}
 
-html = html.replace(/\n\t\tif \(window\.innerHeight > window\.innerWidth && window\.innerWidth < 700\) \{\n\t\t\tcanvas\.classList\.add\('memepire-landscape-framed'\);\n\t\t\} else \{\n\t\t\tcanvas\.classList\.remove\('memepire-landscape-framed'\);\n\t\t\}\n/g, "\n");
+#canvas {
+\tdisplay: block;
+\twidth: min(100vw, calc(100vh * 1.777777778)) !important;
+\theight: min(100vh, calc(100vw * 0.5625)) !important;
+\tmax-width: none !important;
+\tmax-height: none !important;
+\tbackground-color: #06101f;
+\timage-rendering: pixelated;
+}
+
+#canvas:focus {`,
+);
+
+html = html.replace(
+  /\t\t<div id="memepire-frame">\n\t\t\t<canvas id="canvas">\n\t\t\t\tYour browser does not support the canvas tag\.\n\t\t\t<\/canvas>\n\t\t<\/div>\n\t\t<div id="memepire-cover-top" class="memepire-cover"><\/div>\n\t\t<div id="memepire-cover-bottom" class="memepire-cover"><\/div>\n\t\t<div id="memepire-cover-left" class="memepire-cover"><\/div>\n\t\t<div id="memepire-cover-right" class="memepire-cover"><\/div>/g,
+  "\t\t<div id=\"memepire-viewport\">\n\t\t\t<canvas id=\"canvas\">\n\t\t\t\tYour browser does not support the canvas tag.\n\t\t\t</canvas>\n\t\t</div>",
+);
+html = html.replace(
+  /\t\t<canvas id="canvas">\n\t\t\tYour browser does not support the canvas tag\.\n\t\t<\/canvas>/g,
+  "\t\t<div id=\"memepire-viewport\">\n\t\t\t<canvas id=\"canvas\">\n\t\t\t\tYour browser does not support the canvas tag.\n\t\t\t</canvas>\n\t\t</div>",
+);
+html = html.replace(/\n\t\t<div id="memepire-mask-(?:top|bottom|left|right)" class="memepire-mask"><\/div>/g, "");
+html = html.replace(/\n#memepire-frame \{[\s\S]*?\n\}\n\n\.memepire-cover \{[\s\S]*?\n\}\n/g, "\n");
+html = html.replace(
+  /\n\t\t<script>window\.__memepireNativeDevicePixelRatio=window\.devicePixelRatio;Object\.defineProperty\(window,'devicePixelRatio',\{get:function\(\)\{return 1;\},configurable:true\}\);<\/script>/g,
+  "",
+);
+html = html.replace(
+  /\n\t\t<script>\nwindow\.__memepireNativeDevicePixelRatio = window\.devicePixelRatio \|\| 1;\nif \(window\.__memepireNativeDevicePixelRatio < 1\) \{\n\tObject\.defineProperty\(window, 'devicePixelRatio', \{\n\t\tget: function\(\) \{\n\t\t\treturn 1;\n\t\t\},\n\t\tconfigurable: true\n\t\}\);\n\}\n\t\t<\/script>/g,
+  "",
+);
+html = html.replace(
+  /\nwindow\.__memepireNativeDevicePixelRatio = window\.devicePixelRatio \|\| 1;\nObject\.defineProperty\(window, 'devicePixelRatio', \{\n\tget: function\(\) \{\n\t\tvar ratio = window\.__memepireNativeDevicePixelRatio \|\| 1;\n\t\treturn ratio < 1 \? 1 \/ ratio : ratio;\n\t\},\n\tconfigurable: true\n\}\);\n/g,
+  "\n",
+);
+html = html.replace(
+  /\n\t\t<script src="index\.js"><\/script>/,
+  `\n\t\t<script>
+window.__memepireNativeDevicePixelRatio = window.devicePixelRatio || 1;
+Object.defineProperty(window, 'devicePixelRatio', {
+\tget: function () {
+\t\treturn 1;
+\t},
+\tconfigurable: true,
+});
+\t\t</script>
+\t\t<script src="index.js"></script>`,
+);
+html = html.replace(
+  /\nconst memepireCanvas = document\.getElementById\('canvas'\);\nfunction memepireResizeCanvas\(\) \{[\s\S]*?\n\}\nwindow\.addEventListener\('resize', memepireResizeCanvas\);\nmemepireResizeCanvas\(\);\n(?:setTimeout\(memepireResizeCanvas, 250\);\nsetTimeout\(memepireResizeCanvas, 1000\);\n)?/g,
+  "\n",
+);
+
+html = html.replace(
+  /\nfunction memepireFitCanvas\(\) \{[\s\S]*?\n\}\nwindow\.addEventListener\('resize', memepireFitCanvas\);\n/g,
+  "\n",
+);
+html = html.replace(
+  /\t\t\}\)\.then\(\(\) => \{\n\t\t\tsetStatusMode\('hidden'\);\n\t\t\}, displayFailureNotice\);/,
+  `\t\t}).then(() => {
+\t\t\tsetStatusMode('hidden');
+\t\t\tfunction memepireFitCanvas() {
+\t\t\t\tconst canvas = document.getElementById('canvas');
+\t\t\t\tif (!canvas) return;
+\t\t\t\tcanvas.width = 1280;
+\t\t\t\tcanvas.height = 720;
+\t\t\t\tcanvas.style.width = 'min(100vw, calc(100vh * 1.777777778))';
+\t\t\t\tcanvas.style.height = 'min(100vh, calc(100vw * 0.5625))';
+\t\t\t}
+\t\t\twindow.addEventListener('resize', memepireFitCanvas);
+\t\t\tmemepireFitCanvas();
+\t\t\tsetTimeout(memepireFitCanvas, 250);
+\t\t}, displayFailureNotice);`,
+);
 
 await writeFile(htmlPath, html);
-console.log("[memepire-web-shell] full-viewport canvas wrapper verified");
+await writeFile(jsPath, js);
+console.log("[memepire-web-shell] logical-pixel fractional-DPR-safe shell verified");

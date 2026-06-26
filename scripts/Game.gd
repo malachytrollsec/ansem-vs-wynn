@@ -1,5 +1,5 @@
 extends Node
-## Global state + brand palette for Age of Memepires (Godot port).
+## Global state + brand palette for the Israel vs Palestine RTS skin.
 
 # --- Blue pixel identity (ported from the web build's tokens) ---
 const COL_INK := Color("06101f")
@@ -16,12 +16,10 @@ const COL_DIRT := Color("6b4a2a")
 const COL_RIVER := Color("21879d")
 const COL_ENEMY := Color("9b3a31")
 
-# --- Meme kings ---
+# --- Launch factions ---
 const KINGS := {
-	"fartcoin": {"name": "$FARTCOIN", "kingdom": "Gas Crown", "color": Color("f0c044")},
-	"pepe": {"name": "$PEPE", "kingdom": "Frog Throne", "color": Color("43c865")},
-	"doge": {"name": "$DOGE", "kingdom": "Doge Keep", "color": Color("e7a93a")},
-	"pnut": {"name": "$PNUT", "kingdom": "Peanut Court", "color": Color("f4f1df")},
+	"doge": {"name": "ISRAEL", "kingdom": "Iron Dome", "color": Color("61b8ff"), "asset": "israel"},
+	"pepe": {"name": "PALESTINE", "kingdom": "Olive Front", "color": Color("43c865"), "asset": "palestine"},
 }
 
 const COSTS := {
@@ -39,14 +37,30 @@ const COSTS := {
 	"upgrade_eco": {"food": 110, "timber": 60},
 }
 
-# meme-renamed unit roster (display labels). Internal kinds stay sprite-keyed.
+# Display labels. Internal kinds stay sprite-keyed for the existing RTS logic.
 const UNIT_KINDS := ["villager", "swordsman", "archer", "lancer", "siege"]
 const UNIT_NAME := {
-	"villager": "JEETS",
-	"swordsman": "TRENCHER",
-	"archer": "DEGENS",
-	"lancer": "SOLTARD",
-	"siege": "WHALE",
+	"villager": "WORKERS",
+	"swordsman": "INFANTRY",
+	"archer": "ARCHERS",
+	"lancer": "LANCERS",
+	"siege": "SIEGE",
+}
+const UNIT_NAME_BY_FACTION := {
+	"doge": {
+		"villager": "ISR WORK",
+		"swordsman": "ISR INF",
+		"archer": "ISR ARCH",
+		"lancer": "ISR LANCE",
+		"siege": "ISR SIEGE",
+	},
+	"pepe": {
+		"villager": "PAL WORK",
+		"swordsman": "PAL INF",
+		"archer": "PAL ARCH",
+		"lancer": "PAL LANCE",
+		"siege": "PAL SIEGE",
+	},
 }
 
 var atk_bonus := 0.0
@@ -54,7 +68,7 @@ var armor_bonus := 0.0
 var eco_bonus := 1.0
 var has_forge := false
 
-var player_king := "fartcoin"
+var player_king := "doge"
 var rival_king := "pepe"
 var pressure := "standard"   # standard | rush | siege
 var wave := 0
@@ -62,27 +76,27 @@ var arena := "meadow"
 
 # 16 arenas (data-driven terrain). feature drives the central terrain renderer.
 const ARENAS := {
-	"meadow":     {"label": "Meadow",     "ground": "65a844", "feature": "none",    "decor": 150},
-	"creek":      {"label": "Creek",      "ground": "63a642", "feature": "river",   "decor": 150},
-	"garden":     {"label": "Garden",     "ground": "6cb049", "feature": "patches", "decor": 220},
-	"ruins":      {"label": "Ruins",      "ground": "5e9a40", "feature": "dirt",    "decor": 120},
-	"grove":      {"label": "Grove",      "ground": "5a9a3c", "feature": "forest",  "decor": 260},
-	"crossroads": {"label": "Crossroads", "ground": "67a846", "feature": "cross",   "decor": 130},
-	"pond":       {"label": "Pond",       "ground": "66ab48", "feature": "pond",    "decor": 160},
-	"courtyard":  {"label": "Courtyard",  "ground": "6fae50", "feature": "plaza",   "decor": 110},
-	"orchard":    {"label": "Orchard",    "ground": "69ad45", "feature": "forest",  "decor": 210},
-	"quarry":     {"label": "Quarry",     "ground": "5c8f3e", "feature": "dirt",    "decor": 100},
-	"wildflower": {"label": "Wildflower", "ground": "6cb24d", "feature": "flowers", "decor": 280},
-	"millpond":   {"label": "Millpond",   "ground": "64a644", "feature": "pond",    "decor": 170},
-	"isle":       {"label": "Isle",       "ground": "67a846", "feature": "pond",    "decor": 150},
-	"festival":   {"label": "Festival",   "ground": "6db04e", "feature": "cross",   "decor": 190},
-	"causeway":   {"label": "Causeway",   "ground": "61a040", "feature": "river",   "decor": 140},
-	"bannerfield":{"label": "Bannerfield","ground": "66ac48", "feature": "patches", "decor": 170},
+	"meadow":     {"label": "Negev Flats",      "ground": "caa565", "feature": "scrub",      "decor": 150, "biome": "sand"},
+	"creek":      {"label": "Wadi Crossing",    "ground": "bd9559", "feature": "wadi",       "decor": 145, "biome": "sand"},
+	"garden":     {"label": "Olive Grove",      "ground": "b7985d", "feature": "olive",      "decor": 210, "biome": "sand"},
+	"ruins":      {"label": "Old City Ruins",   "ground": "b88756", "feature": "urban",      "decor": 110, "biome": "sand"},
+	"grove":      {"label": "Hilltop Grove",    "ground": "b99a61", "feature": "olive",      "decor": 230, "biome": "sand"},
+	"crossroads": {"label": "Checkpoint Road",  "ground": "c29a5f", "feature": "checkpoint", "decor": 125, "biome": "sand"},
+	"pond":       {"label": "Coastal Reservoir","ground": "c6a269", "feature": "pond",       "decor": 150, "biome": "sand"},
+	"courtyard":  {"label": "Stone Courtyard",  "ground": "b8925a", "feature": "plaza",      "decor": 95,  "biome": "sand"},
+	"orchard":    {"label": "Olive Orchard",    "ground": "b99862", "feature": "olive",      "decor": 220, "biome": "sand"},
+	"quarry":     {"label": "Limestone Quarry", "ground": "ad8551", "feature": "quarry",     "decor": 95,  "biome": "sand"},
+	"wildflower": {"label": "Spring Scrubland", "ground": "c4a064", "feature": "scrub",      "decor": 250, "biome": "sand"},
+	"millpond":   {"label": "Dry Wadi",         "ground": "bd9559", "feature": "wadi",       "decor": 155, "biome": "sand"},
+	"isle":       {"label": "Coastal Dunes",    "ground": "d2ad70", "feature": "coast",      "decor": 130, "biome": "sand"},
+	"festival":   {"label": "Market Street",    "ground": "b48d58", "feature": "urban",      "decor": 145, "biome": "sand"},
+	"causeway":   {"label": "Border Causeway",  "ground": "c19b61", "feature": "checkpoint", "decor": 130, "biome": "sand"},
+	"bannerfield":{"label": "Fence Line",       "ground": "bd9359", "feature": "fence",      "decor": 150, "biome": "sand"},
 }
 const ARENA_ORDER := ["meadow", "creek", "garden", "ruins", "grove", "crossroads", "pond", "courtyard", "orchard", "quarry", "wildflower", "millpond", "isle", "festival", "causeway", "bannerfield"]
 
 # stable wire indices for snapshot encoding
-const KING_ORDER := ["fartcoin", "pepe", "doge", "pnut"]
+const KING_ORDER := ["doge", "pepe"]
 const STRUCT_TYPES := ["keep", "house", "forge", "tower", "market"]
 
 # multiplayer role (set by the lobby, preserved across reset())
@@ -92,17 +106,22 @@ var my_team := 0     # which team this client controls (host=0, joiner=1)
 func arena_cfg() -> Dictionary:
 	return ARENAS.get(arena, ARENAS["meadow"])
 
-# each meme king's passive edge (thematic), applied to its own units
+# each faction's passive edge, applied to its own units
 const KING_BONUS := {
-	"fartcoin": {"gather": 1.5, "hp": 1.0, "speed": 1.0, "atk": 1.0},
-	"pepe": {"gather": 1.0, "hp": 1.0, "speed": 1.18, "atk": 1.0},
-	"doge": {"gather": 1.0, "hp": 1.22, "speed": 1.0, "atk": 1.0},
-	"pnut": {"gather": 1.0, "hp": 1.0, "speed": 1.0, "atk": 1.2},
+	"doge": {"gather": 1.0, "hp": 1.18, "speed": 1.0, "atk": 1.05},
+	"pepe": {"gather": 1.12, "hp": 1.0, "speed": 1.12, "atk": 1.0},
 }
 
 func king_bonus(king: String, stat: String) -> float:
 	var kb: Dictionary = KING_BONUS.get(king, {})
 	return float(kb.get(stat, 1.0))
+
+func unit_label(kind: String, king := "") -> String:
+	if king != "":
+		var faction_names: Dictionary = UNIT_NAME_BY_FACTION.get(king, {})
+		if faction_names.has(kind):
+			return String(faction_names[kind])
+	return String(UNIT_NAME.get(kind, kind.to_upper()))
 
 # --- Economy ---
 const START_FOOD := 420
@@ -236,7 +255,15 @@ fetch('/leaderboard', {
   body: JSON.stringify({entry: %s, walletToken: %s})
 }).then(function(r){ return r.json(); }).then(function(data){
   window.__memepireLeaderboard = data;
-  window.__memepireState = Object.assign(window.__memepireState || {}, {leaderboardPosted: true, leaderboardScore: data.submitted && data.submitted.score});
+	  window.__memepireState = Object.assign(window.__memepireState || {}, {
+	    leaderboardPosted: true,
+	    leaderboardScore: data.submitted && data.submitted.score,
+	    leaderboardSubmittedId: data.submitted && data.submitted.id,
+	    leaderboardSubmittedKing: data.submitted && data.submitted.kingId,
+	    leaderboardSubmittedRival: data.submitted && data.submitted.rivalId,
+	    leaderboardSubmittedResult: data.submitted && data.submitted.result,
+	    leaderboardSubmittedStake: data.submitted && data.submitted.stake
+	  });
 }).catch(function(err){
   window.__memepireState = Object.assign(window.__memepireState || {}, {leaderboardPosted: false, leaderboardError: String(err && err.message || err)});
 });
@@ -280,8 +307,9 @@ func add_timber(n: int) -> void:
 	resources_changed.emit()
 
 func unit_sheet(king: String, kind: String) -> String:
-	if kind == "siege":
-		if king == "doge":
-			return "res://assets/units/doge_siege_walk.png"
-		return "res://assets/units/breaker_walk.png"  # generic siege engine
-	return "res://assets/units/%s_%s_walk.png" % [king, kind]
+	var asset := String(KINGS.get(king, {}).get("asset", king))
+	return "res://assets/units/%s_%s_walk.png" % [asset, kind]
+
+func portrait_path(king: String) -> String:
+	var asset := String(KINGS.get(king, {}).get("asset", king))
+	return "res://assets/portraits/faction_portrait_%s.png" % asset

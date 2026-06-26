@@ -103,20 +103,32 @@ for (const path of [
   "scripts/Main.gd",
   "scripts/Net.gd",
   "scripts/Wallet.gd",
-  "assets/units/doge_swordsman_walk.png",
-  "assets/units/doge_villager_walk.png",
-  "assets/units/doge_archer_walk.png",
-  "assets/units/doge_lancer_walk.png",
-  "assets/units/doge_siege_walk.png",
-  "assets/units/pepe_swordsman_walk.png",
-  "assets/units/pepe_villager_walk.png",
-  "assets/units/pepe_archer_walk.png",
-  "assets/units/pepe_lancer_walk.png",
+  "assets/portraits/faction_portrait_israel.png",
+  "assets/portraits/faction_portrait_palestine.png",
+  "assets/ui/faction_icon_israel.png",
+  "assets/ui/faction_icon_palestine.png",
+  "assets/units/israel_swordsman_walk.png",
+  "assets/units/israel_villager_walk.png",
+  "assets/units/israel_archer_walk.png",
+  "assets/units/israel_lancer_walk.png",
+  "assets/units/israel_siege_walk.png",
+  "assets/units/palestine_swordsman_walk.png",
+  "assets/units/palestine_villager_walk.png",
+  "assets/units/palestine_archer_walk.png",
+  "assets/units/palestine_lancer_walk.png",
+  "assets/units/palestine_siege_walk.png",
   "assets/terrain/terrain_grass_battlefield.png",
   "assets/terrain/terrain_grass_tile.png",
   "assets/terrain/terrain_grass_variation_01.png",
   "assets/terrain/terrain_grass_variation_02.png",
   "assets/terrain/terrain_grass_variation_03.png",
+  "assets/terrain/terrain_sand_battlefield.png",
+  "assets/terrain/terrain_sand_tile.png",
+  "assets/terrain/terrain_sand_variation_01.png",
+  "assets/terrain/terrain_sand_variation_02.png",
+  "assets/terrain/terrain_sand_variation_03.png",
+  "assets/terrain/terrain_detail_sand_rock.png",
+  "assets/terrain/terrain_detail_dry_scrub.png",
   "assets/fx/command_attack_marker.png",
   "assets/fx/command_gather_marker.png",
   "assets/fx/command_move_marker.png",
@@ -135,6 +147,7 @@ for (const path of [
   "assets/ui/control_icon_rally.png",
   "assets/ui/control_icon_speed.png",
   "assets/ui/control_icon_workers.png",
+  "assets/ui/control_icon_zoom.png",
   "assets/ui/main_menu_logo.png",
   "assets/ui/ui_rd_panel_large.png",
   "assets/ui/ui_rd_panel_medium.png",
@@ -149,7 +162,7 @@ for (const path of [
   "tools/check-wallet-leaderboard.mjs",
   "tools/check-web-visual.mjs",
   "tools/fix-web-shell.mjs",
-  "tools/slice-doge-sprites.py",
+  "tools/slice-faction-sprites.py",
   "build/web/index.html",
   "build/web/index.js",
   "build/web/index.pck",
@@ -176,12 +189,14 @@ const streamCheck = await read("tools/check-room-stream.mjs");
 const walletCheck = await read("tools/check-wallet-leaderboard.mjs");
 const webVisualCheck = await read("tools/check-web-visual.mjs");
 const webShellFix = await read("tools/fix-web-shell.mjs");
-const dogeSlicer = await read("tools/slice-doge-sprites.py");
+const factionSlicer = await read("tools/slice-faction-sprites.py");
 const html = await read("build/web/index.html");
 
-requireText("project", project, 'config/name="Age of Memepires"');
-requireText("project web stretch", project, 'window/stretch/aspect="ignore"');
-requireText("project web stretch", project, 'window/stretch/mode="disabled"');
+requireText("project", project, 'config/name="Israel vs Palestine"');
+requireText("project web viewport", project, "window/size/viewport_width=1280");
+requireText("project web viewport", project, "window/size/viewport_height=720");
+requireText("project web stretch", project, 'window/stretch/aspect="expand"');
+requireText("project web stretch", project, 'window/stretch/mode="canvas_items"');
 requireText("main multiplayer", main, "func _room_snapshot()");
 requireText("main multiplayer final snapshot", main, "func _send_final_snapshot()");
 requireText("main multiplayer remote result", main, "_remote_over_shown");
@@ -201,7 +216,8 @@ requireText("main web meme sprite preview", main, '"lancer"');
 requireText("main web meme sprite preview", main, '"siege"');
 requireText("main web selection summary preview", main, "selectionSummaryPreview");
 requireText("main web selection summary preview", main, "func _web_selection_summary_preview");
-requireText("game doge siege crawler", game, "doge_siege_walk.png");
+requireText("game faction asset sheets", game, "portrait_path");
+requireText("game faction asset sheets", game, 'KINGS.get(king, {}).get("asset", king)');
 requireText("main remote result smoke", main, "--remote-result-smoke");
 requireText("main remote result", main, "hostResult");
 requireText("main tower targeting", main, "--tower-target-smoke");
@@ -237,12 +253,11 @@ requireText("unit graphics", unit, "draw_set_transform");
 requireText("unit directional sprites", unit, "var _facing_row");
 requireText("unit directional sprites", unit, "func _face_dir");
 requireText("unit directional sprites", unit, "func _set_sprite_frame");
-requireText("unit doge readable sprites", unit, "func _sprite_scale");
-requireText("unit doge readable sprites", unit, "return 1.36");
-requireText("unit doge readable sprites", unit, "return 1.26");
-requireText("unit doge readable sprites", unit, "return 1.24");
-requireText("unit all faction readable sprites", unit, "return 1.55");
-requireText("unit all faction readable sprites", unit, "return 1.58");
+requireText("unit readable sprites", unit, "func _sprite_scale");
+requireText("unit readable sprites", unit, "return 1.64");
+requireText("unit readable sprites", unit, "return 1.72");
+requireText("unit all faction readable sprites", unit, "return 1.82");
+requireText("unit all faction readable sprites", unit, "return 1.62");
 requireText("unit all faction clickable sprites", unit, "func click_radius");
 requireText("unit all faction clickable sprites", unit, "func _selection_radius");
 requireText("main all faction unit scale", main, "--unit-scale-smoke");
@@ -260,18 +275,20 @@ requireText("game opening resources", game, "const START_FOOD := 420");
 requireText("game opening resources", game, "const START_TIMBER := 360");
 requireText("game opening resources", game, "const START_POP_CAP := 24");
 requireText("unit sturdier villagers", unit, "hp = 60.0; max_hp = 60.0");
-requireText("meme sprite slicer", dogeSlicer, "SOURCES_BY_KING");
-requireText("meme sprite slicer", dogeSlicer, 'f"{king}_{kind}_walk.png"');
-requireText("doge sprite slicer", dogeSlicer, '"swordsman"');
-requireText("doge sprite slicer", dogeSlicer, '"villager"');
-requireText("doge sprite slicer", dogeSlicer, '"archer"');
-requireText("doge sprite slicer", dogeSlicer, '"lancer"');
-requireText("doge sprite slicer", dogeSlicer, '"siege"');
-requireText("pepe sprite slicer", dogeSlicer, '"pepe"');
-requireText("pepe sprite slicer", dogeSlicer, "pepe swordsman.png");
-requireText("pepe sprite slicer", dogeSlicer, "pepevillager.png");
-requireText("pepe sprite slicer", dogeSlicer, "ChatGPT Image Jun 23, 2026, 01_59_38 AM.png");
-requireText("pepe sprite slicer", dogeSlicer, "ChatGPT Image Jun 23, 2026, 02_09_13 AM.png");
+requireText("faction sprite slicer", factionSlicer, "SOURCES_BY_FACTION");
+requireText("faction sprite slicer", factionSlicer, 'f"{faction}_{kind}_walk.png"');
+requireText("faction sprite slicer", factionSlicer, "DERIVED_ROLES");
+requireText("israel sprite slicer", factionSlicer, '"israel"');
+requireText("israel sprite slicer", factionSlicer, "idf swordsman.png");
+requireText("israel sprite slicer", factionSlicer, "idf villager.png");
+requireText("israel sprite slicer", factionSlicer, "idf archer.png");
+requireText("israel sprite slicer", factionSlicer, "idf siegecrawler.png");
+requireText("palestine sprite slicer", factionSlicer, '"palestine"');
+requireText("palestine sprite slicer", factionSlicer, "pal swordsman.png");
+requireText("palestine sprite slicer", factionSlicer, "palestinian villlager.png");
+requireText("derived sprite slicer", factionSlicer, '"lancer"');
+requireText("derived sprite slicer", factionSlicer, '"archer"');
+requireText("derived sprite slicer", factionSlicer, '"siege"');
 requireText("main destroyed entities", main, "--destroyed-entity-smoke");
 requireText("main destroyed entities", main, "func _node_alive");
 requireText("main destroyed entities", main, "func _prune_dead_entities");
@@ -321,8 +338,8 @@ requireText("main RTS double-click selection", main, "--double-click-select-smok
 requireText("main RTS double-click selection", main, "func _double_click_select_smoke");
 requireText("main RTS double-click selection", main, "func _select_visible_kind");
 requireText("main RTS double-click selection", main, "func _visible_world_rect");
-requireText("main doge sprite smoke", main, "--doge-sprite-smoke");
-requireText("main doge sprite smoke", main, "func _doge_sprite_smoke");
+requireText("main faction sprite smoke", main, "--faction-sprite-smoke");
+requireText("main faction sprite smoke", main, "func _faction_sprite_smoke");
 requireText("main doge sprite smoke", main, "readable_scale");
 requireText("main unit spawn setup order", main, "u.setup(king, kind, team)\n\tadd_child(u)");
 requireText("main structure setup order", main, "st.setup(kind, team)\n\tadd_child(st)");
@@ -339,8 +356,13 @@ requireText("main structure footprints", main, "Structure.visual_scale_for(kind)
 requireText("main battlefield graphics", main, "river_edge");
 requireText("main battlefield graphics", main, "road_edge");
 requireText("main battlefield graphics", main, "BATTLEFIELD_GRASS_PATH");
-requireText("main battlefield graphics", main, "draw_texture_rect(battlefield_grass");
-requireText("main battlefield graphics", main, "terrain_grass_variation_03.png");
+requireText("main battlefield graphics", main, "BATTLEFIELD_SAND_PATH");
+requireText("main battlefield graphics", main, "SAND_VARIATION_PATHS");
+requireText("main battlefield graphics", main, 'biome == "sand"');
+requireText("main battlefield graphics", main, "terrain_sand_variation_03.png");
+requireText("game arena terrain", game, '"label": "Negev Flats"');
+requireText("game arena terrain", game, '"feature": "checkpoint"');
+requireText("game arena terrain", game, '"biome": "sand"');
 requireText("main remote economy", main, "--remote-economy-smoke");
 requireText("main remote economy", main, "func _research_for_team");
 requireText("main remote economy", main, "rivalResources");
@@ -415,7 +437,8 @@ requireText("hud defend command", hud, "cmd_defend_base()");
 requireText("hud defend command", hud, "Defend base");
 requireText("hud control group readout", hud, "lbl_groups");
 requireText("hud control group readout", hud, "_refresh_control_groups");
-requireText("hud RTS matchup overlap", hud, "matchup_holder.offset_top = 82.0 if portrait else 96.0 if compact else 88.0");
+forbidText("hud no in-game matchup banner", hud, "_build_matchup()");
+forbidText("hud no in-game matchup banner", hud, "matchup_holder");
 requireText("hud portrait responsive", hud, "func _display_size");
 requireText("hud portrait responsive", hud, "window.innerWidth || 0");
 requireText("hud portrait responsive", hud, "var portrait := display.y > display.x * 1.15");
@@ -495,6 +518,11 @@ requireText("start menu phantom wallet", startMenu, "CONNECT PHANTOM");
 requireText("start menu ticket wallet", startMenu, "TICKET MODE");
 requireText("start menu wallet status", startMenu, "PHANTOM NOT FOUND");
 requireText("start menu wager unit", startMenu, "\"unit\": unit");
+requireText("start menu launch readiness", startMenu, "func _refresh_launch_status");
+requireText("start menu launch readiness", startMenu, "START VERIFIED WAR");
+requireText("start menu launch readiness", startMenu, "START TICKET WAR");
+requireText("start menu launch readiness", startMenu, "Phantom signs identity and leaderboard rows; ticket mode is unverified.");
+requireText("start menu launch readiness", startMenu, "ACCEPT WAGER TO LAUNCH");
 requireText("server wager unit", server, "wagerUnit");
 requireText("server wager unit", server, "ticketMode");
 requireText("server relay", server, 'url.pathname !== "/room"');
@@ -540,7 +568,7 @@ requireText("server leaderboard", server, "leaderboardPayload");
 requireText("server leaderboard", server, "verifyLeaderboardWallet");
 requireText("stream check", streamCheck, "room stream verified");
 requireText("wallet check", walletCheck, "challenge/login/verified leaderboard verified");
-requireText("web visual check", webVisualCheck, "exported app reached desktop, meme sprite preview, landscape mobile, and portrait mobile menu/match/result in Chrome");
+requireText("web visual check", webVisualCheck, "exported app reached desktop, meme sprite preview, fractional DPR, landscape mobile, and portrait mobile menu/match/result in Chrome");
 requireText("web visual check", webVisualCheck, "window.__memepireState");
 requireText("web visual check", webVisualCheck, "Page.captureScreenshot");
 requireText("web visual check", webVisualCheck, "start=1");
@@ -549,6 +577,8 @@ requireText("web visual check", webVisualCheck, "memeSpritePreview=1");
 requireText("web visual check", webVisualCheck, "selectionSummaryPreview=1");
 requireText("web visual check", webVisualCheck, "waitForSelectionSummaryPreview");
 requireText("web visual check", webVisualCheck, "meme-sprites-cdp.png");
+requireText("web visual check", webVisualCheck, "fractional-dpr-cdp.png");
+requireText("web visual check", webVisualCheck, "deviceScaleFactor: 0.8");
 requireText("web visual check", webVisualCheck, "waitForMemeSpritePreview");
 requireText("web visual check", webVisualCheck, "mobile-menu-cdp.png");
 requireText("web visual check", webVisualCheck, "portrait-menu-cdp.png");
@@ -558,25 +588,51 @@ requireText("web visual check", webVisualCheck, "centerMean > 0.08");
 requireText("web visual check", webVisualCheck, "ImageMagick");
 requireText("web visual check", webVisualCheck, "width: 844");
 requireText("web visual check", webVisualCheck, "width: 390");
-requireText("web shell fix", webShellFix, "html, body {\\n\\twidth: 100%;\\n\\theight: 100%;\\n}");
+requireText("web shell fix", webShellFix, "html, body {");
+requireText("web shell fix", webShellFix, "width: 100%;");
+requireText("web shell fix", webShellFix, "height: 100%;");
+requireText("web shell fix", webShellFix, "__memepireNativeDevicePixelRatio");
+requireText("web shell fix", webShellFix, "return 1;");
 forbidText("web shell fix", webShellFix, "memepireClampedDpr");
 forbidText("web shell fix", webShellFix, "function memepireScaleCanvas");
-requireText("web shell fix", webShellFix, "function memepireResizeCanvas");
-requireText("web shell fix", webShellFix, "memepireCanvas.width = 1280");
-requireText("web shell fix", webShellFix, "pixelSafeScale");
-requireText("web export", html, "<title>Age of Memepires</title>");
+requireText("web shell fix", webShellFix, "function memepireFitCanvas");
+requireText("web shell fix", webShellFix, "width: min(100vw, calc(100vh * 1.777777778)) !important;");
+requireText("web shell fix", webShellFix, "height: min(100vh, calc(100vw * 0.5625)) !important;");
+requireText("web shell fix", webShellFix, "canvas.width = 1280;");
+requireText("web shell fix", webShellFix, "canvas.height = 720;");
+requireText("web shell fix", webShellFix, "image-rendering: pixelated;");
+requireText("web shell fix", webShellFix, "overflow: hidden");
+requireText("web shell fix", webShellFix, "canvasResizePolicy\":0");
+requireText("web shell fix", webShellFix, "logical-pixel fractional-DPR-safe shell verified");
+forbidText("web shell fix", webShellFix, "getPixelRatio:function(){return 1}");
+forbidText("web shell fix", webShellFix, "memepireCanvas.width = width");
+forbidText("web shell fix", webShellFix, "pixelSafeScale");
+requireText("web export", html, "<title>Israel vs Palestine</title>");
 requireText("web export wallet", html, "__memepireWalletToken");
 forbidText("web export wallet", html, "window.MemepireWallet");
 requireText("web export shell", html, "html, body {");
 requireText("web export shell", html, "width: 100%;");
 requireText("web export shell", html, "height: 100%;");
-requireText("web export shell", html, "function memepireResizeCanvas");
-requireText("web export shell", html, "memepireCanvas.width = 1280");
-requireText("web export shell", html, "pixelSafeScale");
+requireText("web export shell", html, "width: min(100vw, calc(100vh * 1.777777778)) !important;");
+requireText("web export shell", html, "height: min(100vh, calc(100vw * 0.5625)) !important;");
+requireText("web export shell", html, "overflow: hidden");
+requireText("web export shell", html, "__memepireNativeDevicePixelRatio");
+requireText("web export shell", html, "return 1;");
+forbidText("web export shell", html, "__memepireNativeDevicePixelRatio < 1");
+requireText("web export shell", html, "function memepireFitCanvas");
+forbidText("web export shell", html, 'id="memepire-frame"');
+forbidText("web export shell", html, 'id="memepire-cover-bottom"');
+forbidText("web export shell", html, "memepireSetCover");
+requireText("web export shell", html, "canvas.width = 1280;");
+requireText("web export shell", html, "canvas.height = 720;");
+forbidText("web export shell", html, "const maxScale = dpr > 0 && dpr < 1 ? 1 / dpr : 1");
+forbidText("web export shell", html, "const fitScale = Math.min(maxScale");
 requireText("web export shell", html, '"canvasResizePolicy":0');
 forbidText("web export shell", html, "memepireLowDpr");
 forbidText("web export shell", html, "memepireClampedDpr");
+forbidText("web export shell", html, "pixelSafeScale");
 forbidText("web export shell", html, "memepireScaleCanvas");
+forbidText("web export shell", html, "function memepireResizeCanvas");
 forbidText("stale web export shell", html, "memepire-dpr-clamped");
 forbidText("stale web export shell", html, "syncCanvasDisplaySize");
 
@@ -586,15 +642,16 @@ for (const artifact of ["build/web/index.pck", "build/web/index.wasm"]) {
 }
 
 for (const sprite of [
-  "assets/units/doge_swordsman_walk.png",
-  "assets/units/doge_villager_walk.png",
-  "assets/units/doge_archer_walk.png",
-  "assets/units/doge_lancer_walk.png",
-  "assets/units/doge_siege_walk.png",
-  "assets/units/pepe_swordsman_walk.png",
-  "assets/units/pepe_villager_walk.png",
-  "assets/units/pepe_archer_walk.png",
-  "assets/units/pepe_lancer_walk.png",
+  "assets/units/israel_swordsman_walk.png",
+  "assets/units/israel_villager_walk.png",
+  "assets/units/israel_archer_walk.png",
+  "assets/units/israel_lancer_walk.png",
+  "assets/units/israel_siege_walk.png",
+  "assets/units/palestine_swordsman_walk.png",
+  "assets/units/palestine_villager_walk.png",
+  "assets/units/palestine_archer_walk.png",
+  "assets/units/palestine_lancer_walk.png",
+  "assets/units/palestine_siege_walk.png",
 ]) {
   const meta = await run("magick", [join(root, sprite), "-format", "%w %h %[channels] %[opaque]", "info:"]);
   const parts = meta.trim().split(/\s+/);
@@ -701,10 +758,10 @@ const orderIndicatorSmoke = await run(godot, ["--headless", "--path", root, "--f
 requireText("main order indicator smoke", orderIndicatorSmoke, "ORDER_INDICATOR_SMOKE move=true gather=true attack=true ok=true");
 const commandMarkerSmoke = await run(godot, ["--headless", "--path", root, "--fixed-fps", "30", "scenes/Main.tscn", "--", "--command-marker-smoke"]);
 requireText("main command marker smoke", commandMarkerSmoke, "COMMAND_MARKER_SMOKE loaded=true indicators=true ok=true");
-const dogeSpriteSmoke = await run(godot, ["--headless", "--path", root, "--fixed-fps", "30", "scenes/Main.tscn", "--", "--doge-sprite-smoke"]);
-requireText("main doge sprite smoke", dogeSpriteSmoke, "DOGE_SPRITE_SMOKE loaded=true transparent=true spawned=true directional=true readable_scale=true ok=true");
+const factionSpriteSmoke = await run(godot, ["--headless", "--path", root, "--fixed-fps", "30", "scenes/Main.tscn", "--", "--faction-sprite-smoke"]);
+requireText("main faction sprite smoke", factionSpriteSmoke, "FACTION_SPRITE_SMOKE loaded=true transparent=true spawned=true directional=true readable_scale=true frames=true distinct=true ok=true");
 const unitScaleSmoke = await run(godot, ["--headless", "--path", root, "--fixed-fps", "30", "scenes/Main.tscn", "--", "--unit-scale-smoke"]);
-requireText("main unit scale smoke", unitScaleSmoke, "UNIT_SCALE_SMOKE loaded=true faction_scale=true doge_scale=true click=true spawned=20 ok=true");
+requireText("main unit scale smoke", unitScaleSmoke, "UNIT_SCALE_SMOKE loaded=true scale=true click=true spawned=10 ok=true");
 const intentPreflightSmoke = await run(godot, ["--headless", "--path", root, "--fixed-fps", "30", "scenes/Main.tscn", "--", "--intent-preflight-smoke"]);
 requireText("main intent preflight smoke", intentPreflightSmoke, "INTENT_PREFLIGHT_SMOKE train_blocked=true build_blocked=true research_blocked=true train_sent=true ok=true");
 

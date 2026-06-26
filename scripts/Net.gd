@@ -129,7 +129,7 @@ func _handle(txt: String) -> void:
 			launch_match.emit({
 				"arena": String(msg.get("arena", "meadow")),
 				"pressure": String(msg.get("pressure", "standard")),
-				"host_king": String(msg.get("host_king", "fartcoin")),
+				"host_king": String(msg.get("host_king", "doge")),
 				"wager": msg.get("wager", {}),
 			})
 		_:

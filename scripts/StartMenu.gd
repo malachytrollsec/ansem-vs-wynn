@@ -1,7 +1,7 @@
 extends Control
-## Title screen: pick your meme king, then start the war.
+## Title screen: pick your faction, then start the war.
 
-var selected_king := "fartcoin"
+var selected_king := "doge"
 var pressure := "standard"
 var arena_idx := 0
 var f_display: FontFile
@@ -10,6 +10,9 @@ var cards := {}
 var pressure_btns := {}
 var arena_lbl: Label
 var wager_lbl: Label
+var wager_help_lbl: Label
+var launch_status_lbl: Label
+var start_btn: Button
 var wallet_btn: Button
 var wallet_status_lbl: Label
 var mp_btn: Button
@@ -157,13 +160,14 @@ func _ready() -> void:
 
 	title_logo = TextureRect.new()
 	title_logo.texture = load(MAIN_MENU_LOGO)
-	title_logo.custom_minimum_size = Vector2(520, 144)
+	title_logo.custom_minimum_size = Vector2(360, 168)
 	title_logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	title_logo.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	title_logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	title_logo.visible = true
 	vb.add_child(title_logo)
-	vb.add_child(_label("FOUR MEME KINGS. ONE PIXEL WAR.", f_ui, 13, Game.COL_MUTED))
-	vb.add_child(_label("CHOOSE YOUR KING", f_ui, 14, Game.COL_BONE))
+	vb.add_child(_label("TWO COMMANDS. ONE PIXEL WAR.", f_ui, 13, Game.COL_MUTED))
+	vb.add_child(_label("CHOOSE YOUR SIDE", f_ui, 14, Game.COL_BONE))
 
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 14)
@@ -234,9 +238,30 @@ func _ready() -> void:
 	var wplus := _small_button("+")
 	wplus.pressed.connect(func(): _bump_wager(50))
 	wrow.add_child(wplus)
+
+	var launch_panel := PanelContainer.new()
+	launch_panel.custom_minimum_size = Vector2(760, 64)
+	launch_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	launch_panel.add_theme_stylebox_override("panel", _texture_style(UI_RD_BUTTON, 18.0, 13.0, Color(0.82, 0.9, 1.0, 1.0)))
+	setup_row.add_child(launch_panel)
+	var launch_box := VBoxContainer.new()
+	launch_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	launch_box.add_theme_constant_override("separation", 4)
+	launch_panel.add_child(launch_box)
+	launch_status_lbl = _label("", f_ui, 11, Game.COL_BONE)
+	launch_status_lbl.custom_minimum_size = Vector2(704, 0)
+	launch_status_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	launch_status_lbl.clip_text = true
+	launch_box.add_child(launch_status_lbl)
+	wager_help_lbl = _label("", f_ui, 9, Game.COL_MUTED)
+	wager_help_lbl.custom_minimum_size = Vector2(704, 0)
+	wager_help_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	wager_help_lbl.clip_text = true
+	launch_box.add_child(wager_help_lbl)
 	_refresh_wager()
 
 	var start := Button.new()
+	start_btn = start
 	start.text = "START WAR"
 	start.add_theme_font_override("font", f_ui)
 	start.add_theme_font_size_override("font_size", 16)
@@ -265,6 +290,7 @@ func _ready() -> void:
 	_apply_url_params()
 	_highlight()
 	_refresh_setup()
+	_refresh_launch_status()
 	_apply_responsive_layout()
 	_request_web_leaderboard()
 	if "--shot" in OS.get_cmdline_args() or "--shot" in OS.get_cmdline_user_args():
@@ -307,6 +333,7 @@ func _refresh_wallet() -> void:
 		wallet_btn.add_theme_color_override("font_color", Game.COL_BONE)
 		_set_wallet_status("TICKET MODE ACTIVE\nCONNECT FOR SOL", Game.COL_MUTED)
 	_refresh_wager()
+	_refresh_launch_status()
 
 func _set_wallet_status(text: String, col: Color) -> void:
 	if not is_instance_valid(wallet_status_lbl):
@@ -434,6 +461,37 @@ func _refresh_wager() -> void:
 	else:
 		var unit := _wager_unit_label().to_upper()
 		wager_lbl.text = "%s %d  TAX %d  WIN %d" % [unit, Game.wager_stake, Game.wager_tax(), Game.wager_payout(true)]
+	_refresh_launch_status()
+
+func _refresh_launch_status() -> void:
+	if is_instance_valid(start_btn):
+		if Game.wager_stake <= 0:
+			start_btn.text = "START PRACTICE WAR"
+		elif Wallet.verified:
+			start_btn.text = "START VERIFIED WAR"
+		else:
+			start_btn.text = "START TICKET WAR"
+	if not is_instance_valid(launch_status_lbl) or not is_instance_valid(wager_help_lbl):
+		return
+	var mode := "VERIFIED SOL IDENTITY" if Wallet.verified else "TICKET MODE"
+	var unit := _wager_unit_label().to_upper()
+	var stake := Game.wager_stake
+	var launch_state := "SOLO READY"
+	if Net.connected:
+		var role := "HOST" if Net.role == "host" else "JOINED"
+		if Net.roster.is_empty():
+			launch_state = "%s ROOM %s: WAITING FOR OPPONENT" % [role, _room_code()]
+		elif stake > 0 and not wager_ticket_accepted:
+			launch_state = "%s ROOM %s: ACCEPT WAGER TO LAUNCH" % [role, _room_code()]
+		else:
+			launch_state = "%s ROOM %s: READY" % [role, _room_code()]
+	var wager_text := "NO STAKE"
+	if stake > 0:
+		wager_text = "%s %d | TAX %d | NET %d | WIN %d" % [unit, stake, Game.wager_tax(), Game.wager_net(), Game.wager_payout(true)]
+	launch_status_lbl.text = "%s  -  %s" % [mode, launch_state]
+	wager_help_lbl.text = "%s. Phantom signs identity and leaderboard rows; ticket mode is unverified." % wager_text
+	launch_status_lbl.add_theme_color_override("font_color", Game.COL_ACCENT_BRIGHT if Wallet.verified else Game.COL_BONE)
+	wager_help_lbl.add_theme_color_override("font_color", Game.COL_MUTED)
 
 func _apply_responsive_layout() -> void:
 	var vp := get_viewport().get_visible_rect().size
@@ -450,7 +508,7 @@ func _apply_responsive_layout() -> void:
 		menu_box.pivot_offset = menu_box.size * 0.5
 		menu_box.scale = Vector2(1.22, 1.22) if portrait else Vector2(1.08, 1.08)
 	if is_instance_valid(title_logo):
-		title_logo.custom_minimum_size = Vector2(330, 110) if portrait else Vector2(580, 158)
+		title_logo.custom_minimum_size = Vector2(300, 142) if portrait else Vector2(380, 176)
 	if is_instance_valid(leaderboard_panel):
 		leaderboard_panel.visible = not portrait
 	if is_instance_valid(wallet_btn):
@@ -583,6 +641,7 @@ func _toggle_lobby() -> void:
 	if lobby.visible:
 		url_edit.text = Net.relay_url
 		_refresh_room_share()
+	_refresh_launch_status()
 
 func _origin_url() -> String:
 	if not OS.has_feature("web"):
@@ -594,14 +653,14 @@ func _origin_url() -> String:
 
 func _room_code() -> String:
 	var code := room_edit.text.strip_edges().to_upper()
-	return code if code != "" else "MEMES"
+	return code if code != "" else "IVP"
 
 func _room_links_text() -> String:
 	var room := _room_code()
 	var origin := _origin_url()
 	var stake := str(Game.wager_stake)
 	var rival := _selected_rival()
-	return "Age of Memepires room %s\nHost: %s/?room=%s&host=1&stake=%s&king=%s&rival=%s\nJoin: %s/?room=%s&join=1&stake=%s&king=%s&rival=%s\nRoom Kit: %s/room-kit?room=%s&player=%s&rival=%s" % [
+	return "Israel vs Palestine room %s\nHost: %s/?room=%s&host=1&stake=%s&king=%s&rival=%s\nJoin: %s/?room=%s&join=1&stake=%s&king=%s&rival=%s\nRoom Kit: %s/room-kit?room=%s&player=%s&rival=%s" % [
 		room,
 		origin, room.uri_encode(), stake, selected_king.uri_encode(), rival.uri_encode(),
 		origin, room.uri_encode(), stake, rival.uri_encode(), selected_king.uri_encode(),
@@ -612,10 +671,10 @@ func _room_links_smoke() -> void:
 	selected_king = "doge"
 	Game.rival_king = "pepe"
 	Game.wager_stake = 500
-	room_edit.text = "MEMES"
+	room_edit.text = "IVP"
 	var links := _room_links_text()
-	var host_ok := links.contains("Host: http://127.0.0.1:8799/?room=MEMES&host=1&stake=500&king=doge&rival=pepe")
-	var join_ok := links.contains("Join: http://127.0.0.1:8799/?room=MEMES&join=1&stake=500&king=pepe&rival=doge")
+	var host_ok := links.contains("Host: http://127.0.0.1:8799/?room=IVP&host=1&stake=500&king=doge&rival=pepe")
+	var join_ok := links.contains("Join: http://127.0.0.1:8799/?room=IVP&join=1&stake=500&king=pepe&rival=doge")
 	print("ROOM_LINKS_SMOKE host=%s join=%s" % [str(host_ok).to_lower(), str(join_ok).to_lower()])
 	get_tree().quit(0 if host_ok and join_ok else 1)
 
@@ -630,6 +689,7 @@ func _set_wager_status(text: String, can_answer := false) -> void:
 		wager_accept_btn.disabled = not can_answer
 	if wager_decline_btn:
 		wager_decline_btn.disabled = not can_answer
+	_refresh_launch_status()
 
 func _local_wager_packet(status := "open") -> Dictionary:
 	var unit := "SOL" if Wallet.verified else "ticket"
@@ -727,6 +787,10 @@ func _truthy(v) -> bool:
 
 func _valid_king(v: String) -> String:
 	var key := v.strip_edges().to_lower().replace("$", "")
+	if key in ["israel", "idf"]:
+		return "doge"
+	if key in ["palestine", "pal"]:
+		return "pepe"
 	return key if Game.KINGS.has(key) else ""
 
 func _selected_rival() -> String:
@@ -815,6 +879,7 @@ func _refresh_roster() -> void:
 	for p in Net.roster:
 		names.append(String(p.get("label", "?")))
 	net_roster_lbl.text = "in room: " + ", ".join(names)
+	_refresh_launch_status()
 	_send_wager_offer_soon()
 
 func _net_host() -> void:
@@ -829,6 +894,7 @@ func _net_host() -> void:
 	_set_wager_status("hosting %s room" % _wager_mode_label())
 	Game.publish_web_state({"scene": "menu", "netMode": Game.net_mode, "myTeam": Game.my_team, "selectedKing": selected_king})
 	Net.host_room(room_edit.text.strip_edges())
+	_refresh_launch_status()
 	_send_wager_offer_soon()
 
 func _net_join() -> void:
@@ -843,6 +909,7 @@ func _net_join() -> void:
 	_set_wager_status("joining %s room" % _wager_mode_label())
 	Game.publish_web_state({"scene": "menu", "netMode": Game.net_mode, "myTeam": Game.my_team, "selectedKing": selected_king})
 	Net.join_room(room_edit.text.strip_edges())
+	_refresh_launch_status()
 	_send_wager_offer_soon()
 
 func _net_launch() -> void:
@@ -858,6 +925,7 @@ func _net_launch() -> void:
 	if Game.wager_stake > 0 and not wager_ticket_accepted:
 		net_status_lbl.text = "waiting for accepted wager"
 		_set_wager_status("waiting for accepted %s" % _wager_mode_label())
+		_refresh_launch_status()
 		return
 	Game.player_king = selected_king
 	Game.net_mode = "host"
@@ -872,7 +940,7 @@ func _on_launch_match(cfg: Dictionary) -> void:
 		Game.wager_stake = clampi(int(launch_wager.get("stake", Game.wager_stake)), 0, 5000)
 	Game.net_mode = "host" if Net.role == "host" else "join"
 	Game.my_team = 0 if Net.role == "host" else 1
-	var host_king := String(cfg.get("host_king", "fartcoin"))
+	var host_king := String(cfg.get("host_king", "doge"))
 	if Net.role == "join":
 		Game.player_king = host_king
 		Game.rival_king = selected_king
@@ -943,7 +1011,7 @@ func _card(king: String) -> Button:
 	inset.add_child(col)
 
 	var port := TextureRect.new()
-	port.texture = load("res://assets/portraits/king_portrait_%s.png" % king)
+	port.texture = load(Game.portrait_path(king))
 	port.custom_minimum_size = Vector2(88, 82)
 	port.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	port.mouse_filter = Control.MOUSE_FILTER_IGNORE

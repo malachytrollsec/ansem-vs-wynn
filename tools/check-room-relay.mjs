@@ -19,11 +19,11 @@ server.stderr.on("data", (chunk) => (serverOutput += chunk));
 
 try {
   await waitForHttp(`http://127.0.0.1:${port}/room-kit?room=${room}`);
-  const host = await openWs({ role: "host", from: "host", label: "$FARTCOIN", king: "fartcoin" });
-  const joiner = await openWs({ role: "join", from: "join", label: "$PEPE", king: "pepe" });
+  const host = await openWs({ role: "host", from: "host", label: "ISRAEL", king: "doge" });
+  const joiner = await openWs({ role: "join", from: "join", label: "PALESTINE", king: "pepe" });
 
   await host.waitFor((msg) => msg.type === "hello" && msg.from === "join");
-  host.send({ type: "hello-ack", identity: { label: "$FARTCOIN", king: "fartcoin" } });
+  host.send({ type: "hello-ack", identity: { label: "ISRAEL", king: "doge" } });
   await joiner.waitFor((msg) => msg.type === "hello-ack" && msg.from === "host");
 
   host.send({
@@ -41,8 +41,8 @@ try {
       tax: 13,
       net: 237,
       winPayout: 450,
-      fromKing: "fartcoin",
-      fromLabel: "$FARTCOIN",
+      fromKing: "doge",
+      fromLabel: "ISRAEL",
     },
   });
   const relayedOffer = await joiner.waitFor((msg) => msg.type === "wager-offer" && msg.wager?.ticketId === `${room}-ticket`);
@@ -64,7 +64,7 @@ try {
       net: 237,
       winPayout: 450,
       fromKing: "pepe",
-      fromLabel: "$PEPE",
+      fromLabel: "PALESTINE",
     },
   });
   await host.waitFor((msg) => msg.type === "wager-receipt" && msg.wager?.wagerStatus === "accepted");
@@ -79,9 +79,9 @@ try {
       seconds: 7,
       wave: 0,
       kills: 1,
-      player: "$FARTCOIN",
-      playerId: "fartcoin",
-      rival: "$PEPE",
+      player: "ISRAEL",
+      playerId: "doge",
+      rival: "PALESTINE",
       rivalId: "pepe",
       resources: { food: 260, timber: 180, memp: 50 },
       rivalResources: { food: 240, timber: 120, memp: 30 },
@@ -106,9 +106,9 @@ try {
       seconds: 42,
       wave: 1,
       kills: 3,
-      player: "$FARTCOIN",
-      playerId: "fartcoin",
-      rival: "$PEPE",
+      player: "ISRAEL",
+      playerId: "doge",
+      rival: "PALESTINE",
       rivalId: "pepe",
       resources: { food: 310, timber: 205, memp: 75 },
       rivalResources: { food: 90, timber: 45, memp: 10 },
@@ -180,20 +180,20 @@ try {
 
   const leaderboardEntry = {
     id: `${room}-result`,
-    kingId: "fartcoin",
-    king: "$FARTCOIN",
+    kingId: "doge",
+    king: "ISRAEL",
     rivalId: "pepe",
-    rival: "$PEPE",
+    rival: "PALESTINE",
     result: "won",
-    wave: 2,
-    kills: 7,
+    wave: 99,
+    kills: 999,
     seconds: 123,
     arena: "meadow",
     pressure: "standard",
     wagerUnit: "SOL",
     stake: 250,
     tax: 13,
-    payout: 451.25,
+    payout: 1000000,
   };
   const submitted = await postJson("/leaderboard", { entry: leaderboardEntry });
   const leaderboard = await fetchJson("/leaderboard");
@@ -205,8 +205,8 @@ try {
   joiner.close();
 
   const staleTicketRoom = `${room}X`;
-  const staleHost = await openWs({ roomCode: staleTicketRoom, role: "host", from: "host", label: "$DOGE", king: "doge" });
-  const staleJoiner = await openWs({ roomCode: staleTicketRoom, role: "join", from: "join", label: "$PNUT", king: "pnut" });
+  const staleHost = await openWs({ roomCode: staleTicketRoom, role: "host", from: "host", label: "ISRAEL", king: "doge" });
+  const staleJoiner = await openWs({ roomCode: staleTicketRoom, role: "join", from: "join", label: "PALESTINE", king: "pepe" });
   await staleHost.waitFor((msg) => msg.type === "hello" && msg.from === "join");
   staleHost.send({
     type: "wager-offer",
@@ -218,7 +218,7 @@ try {
       net: 949,
       winPayout: 1803,
       fromKing: "doge",
-      fromLabel: "$DOGE",
+      fromLabel: "ISRAEL",
     },
   });
   await staleJoiner.waitFor((msg) => msg.type === "wager-offer" && msg.wager?.ticketId === `${staleTicketRoom}-ticket`);
@@ -231,10 +231,10 @@ try {
       time: "00:09",
       seconds: 9,
       wave: 0,
-      player: "$DOGE",
+      player: "ISRAEL",
       playerId: "doge",
-      rival: "$PNUT",
-      rivalId: "pnut",
+      rival: "PALESTINE",
+      rivalId: "pepe",
       units: [{ id: 1 }],
       structures: [{ id: 2 }],
     },

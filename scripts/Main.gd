@@ -12,11 +12,18 @@ const AI_FREE_SPAWN_START := 30.0
 const FIRST_WAVE_START := 24.0
 const ENEMY_ATTACK_GRACE := 36.0
 const BATTLEFIELD_GRASS_PATH := "res://assets/terrain/terrain_grass_battlefield.png"
+const BATTLEFIELD_SAND_PATH := "res://assets/terrain/terrain_sand_battlefield.png"
 const GRASS_VARIATION_PATHS := [
 	"res://assets/terrain/terrain_grass_tile.png",
 	"res://assets/terrain/terrain_grass_variation_01.png",
 	"res://assets/terrain/terrain_grass_variation_02.png",
 	"res://assets/terrain/terrain_grass_variation_03.png",
+]
+const SAND_VARIATION_PATHS := [
+	"res://assets/terrain/terrain_sand_tile.png",
+	"res://assets/terrain/terrain_sand_variation_01.png",
+	"res://assets/terrain/terrain_sand_variation_02.png",
+	"res://assets/terrain/terrain_sand_variation_03.png",
 ]
 const COMMAND_MARKER_PATHS := {
 	"attack": "res://assets/fx/command_attack_marker.png",
@@ -103,6 +110,7 @@ var _rival_rally_point := Vector2.ZERO
 var _player_rally_custom := false
 var _rival_rally_custom := false
 var battlefield_grass: Texture2D = null
+var battlefield_sand: Texture2D = null
 var command_markers := {}
 var _projectile_debug_counts := {}
 var alert_pings: Array = []
@@ -112,6 +120,7 @@ var control_groups := {}
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	battlefield_grass = load(BATTLEFIELD_GRASS_PATH)
+	battlefield_sand = load(BATTLEFIELD_SAND_PATH)
 	_load_command_markers()
 	Game.reset()
 	_reset_rival_state()
@@ -243,8 +252,8 @@ func _ready() -> void:
 		call_deferred("_order_indicator_smoke")
 	if "--intent-preflight-smoke" in OS.get_cmdline_args() or "--intent-preflight-smoke" in OS.get_cmdline_user_args():
 		call_deferred("_intent_preflight_smoke")
-	if "--doge-sprite-smoke" in OS.get_cmdline_args() or "--doge-sprite-smoke" in OS.get_cmdline_user_args():
-		call_deferred("_doge_sprite_smoke")
+	if "--faction-sprite-smoke" in OS.get_cmdline_args() or "--faction-sprite-smoke" in OS.get_cmdline_user_args():
+		call_deferred("_faction_sprite_smoke")
 	if "--unit-scale-smoke" in OS.get_cmdline_args() or "--unit-scale-smoke" in OS.get_cmdline_user_args():
 		call_deferred("_unit_scale_smoke")
 	if "--opening-balance-smoke" in OS.get_cmdline_args() or "--opening-balance-smoke" in OS.get_cmdline_user_args():
@@ -299,22 +308,23 @@ func _web_meme_sprite_preview() -> void:
 		return
 	await get_tree().process_frame
 	Game.player_king = "doge"
-	camera.position = player_keep.position + Vector2(230, -210)
+	camera.position = player_keep.position + Vector2(260, -360)
 	_sync_camera_zoom()
 	for u in units:
 		if _node_alive(u):
 			u.visible = false
 			u.selected = false
 	var placements := [
-		{"king": "doge", "kind": "villager", "pos": player_keep.position + Vector2(112, -280), "dir": Vector2.DOWN},
-		{"king": "doge", "kind": "swordsman", "pos": player_keep.position + Vector2(166, -286), "dir": Vector2.RIGHT},
-		{"king": "doge", "kind": "archer", "pos": player_keep.position + Vector2(220, -292), "dir": Vector2.UP},
-		{"king": "doge", "kind": "lancer", "pos": player_keep.position + Vector2(284, -304), "dir": Vector2.RIGHT},
-		{"king": "doge", "kind": "siege", "pos": player_keep.position + Vector2(360, -312), "dir": Vector2.LEFT},
-		{"king": "pepe", "kind": "villager", "pos": player_keep.position + Vector2(112, -194), "dir": Vector2.DOWN},
-		{"king": "pepe", "kind": "swordsman", "pos": player_keep.position + Vector2(166, -200), "dir": Vector2.RIGHT},
-		{"king": "pepe", "kind": "archer", "pos": player_keep.position + Vector2(220, -206), "dir": Vector2.UP},
-		{"king": "pepe", "kind": "lancer", "pos": player_keep.position + Vector2(292, -218), "dir": Vector2.RIGHT},
+		{"king": "doge", "kind": "villager", "pos": player_keep.position + Vector2(80, -470), "dir": Vector2.DOWN},
+		{"king": "doge", "kind": "swordsman", "pos": player_keep.position + Vector2(142, -478), "dir": Vector2.RIGHT},
+		{"king": "doge", "kind": "archer", "pos": player_keep.position + Vector2(204, -486), "dir": Vector2.UP},
+		{"king": "doge", "kind": "lancer", "pos": player_keep.position + Vector2(284, -500), "dir": Vector2.RIGHT},
+		{"king": "doge", "kind": "siege", "pos": player_keep.position + Vector2(382, -508), "dir": Vector2.LEFT},
+		{"king": "pepe", "kind": "villager", "pos": player_keep.position + Vector2(80, -352), "dir": Vector2.DOWN},
+		{"king": "pepe", "kind": "swordsman", "pos": player_keep.position + Vector2(142, -360), "dir": Vector2.RIGHT},
+		{"king": "pepe", "kind": "archer", "pos": player_keep.position + Vector2(204, -368), "dir": Vector2.UP},
+		{"king": "pepe", "kind": "lancer", "pos": player_keep.position + Vector2(292, -382), "dir": Vector2.RIGHT},
+		{"king": "pepe", "kind": "siege", "pos": player_keep.position + Vector2(392, -390), "dir": Vector2.LEFT},
 	]
 	var kinds := []
 	var kings := []
@@ -329,12 +339,12 @@ func _web_meme_sprite_preview() -> void:
 		if not kings.has(king):
 			kings.append(king)
 	Game.selection_changed.emit(kinds.size())
-	Game.log_event("Doge and Pepe unit sprite preview staged.")
+	Game.log_event("Israel and Palestine unit sprite preview staged.")
 	_publish_web_match_state({
 		"memeSpritePreview": true,
 		"memeSpriteKings": kings,
 		"memeSpriteKinds": kinds,
-		"memeSpriteUnits": kinds.size(),
+		"memeSpriteUnits": placements.size(),
 	})
 
 func _web_selection_summary_preview() -> void:
@@ -353,7 +363,7 @@ func _remote_result_smoke() -> void:
 	Game.suppress_result_persistence = true
 	Game.net_mode = "join"
 	Game.my_team = 1
-	Game.player_king = "fartcoin"
+	Game.player_king = "doge"
 	Game.rival_king = "pepe"
 	var before_wins := int(Game.board.get("pepe", {}).get("wins", 0))
 	_apply_snapshot({
@@ -664,8 +674,8 @@ func _selection_summary_smoke() -> void:
 	var summary := _prepare_selection_summary_preview()
 	var composition := String(summary.get("composition", ""))
 	var ok := int(summary.get("count", 0)) == 2 \
-		and composition.contains("JEETS") \
-		and composition.contains("TRENCHER") \
+		and composition.contains("ISR WORK") \
+		and composition.contains("ISR INF") \
 		and int(summary.get("avgHp", 100)) < 100 \
 		and String(summary.get("order", "")) == "MIXED"
 	print("SELECTION_SUMMARY_SMOKE count=%d composition=%s hp=%d order=%s ok=%s" % [int(summary.get("count", 0)), composition, int(summary.get("avgHp", 0)), String(summary.get("order", "")), str(ok).to_lower()])
@@ -895,7 +905,7 @@ func _queue_status_smoke() -> void:
 	train_queue[0]["t"] = archer_time * 0.5
 	var half_summary := hud_queue_summary()
 	var count_ok := int(start_summary.get("count", 0)) == 1 and int(half_summary.get("count", 0)) == 1
-	var name_ok := String(half_summary.get("name", "")) == Game.UNIT_NAME["archer"]
+	var name_ok := String(half_summary.get("name", "")) == Game.unit_label("archer", Game.player_king)
 	var pct_ok := int(half_summary.get("pct", 0)) == 50
 	var seconds_ok := int(half_summary.get("seconds", 0)) == int(ceil(archer_time * 0.5))
 	var ok := count_ok and name_ok and pct_ok and seconds_ok
@@ -950,33 +960,52 @@ func _intent_preflight_smoke() -> void:
 	print("INTENT_PREFLIGHT_SMOKE train_blocked=%s build_blocked=%s research_blocked=%s train_sent=%s ok=%s" % [str(train_blocked).to_lower(), str(build_blocked).to_lower(), str(research_blocked).to_lower(), str(train_sent).to_lower(), str(ok).to_lower()])
 	get_tree().quit(0 if ok else 1)
 
-func _doge_sprite_smoke() -> void:
+func _faction_sprite_smoke() -> void:
 	var kinds := ["villager", "swordsman", "archer", "lancer", "siege"]
 	var loaded := true
 	var transparent := true
 	var spawned := true
 	var directional := true
 	var readable_scale := true
-	for i in range(kinds.size()):
-		var kind: String = kinds[i]
-		var tex: Texture2D = load(Game.unit_sheet("doge", kind))
-		loaded = loaded and tex != null and tex.get_width() == 192 and tex.get_height() == 192
-		if tex != null:
-			var img := tex.get_image()
-			transparent = transparent and img.get_pixel(0, 0).a < 0.01 and img.get_pixel(191, 191).a < 0.01
-		var u := _spawn_unit("doge", kind, 0, player_keep.position + Vector2(160 + i * 46, -40), 0, false)
-		spawned = spawned and _node_alive(u) and u.king == "doge" and u.kind == kind and u._sprite.texture != null
-		var min_scale := 1.2 if ["lancer", "siege"].has(kind) else 1.3
-		readable_scale = readable_scale and u._sprite.scale.x >= min_scale and u._sprite.position.y < -15.0
-		u._face_dir(Vector2.RIGHT)
-		u._set_sprite_frame(1)
-		var side_frame: int = u._sprite.frame
-		u._face_dir(Vector2.UP)
-		u._set_sprite_frame(2)
-		var up_frame: int = u._sprite.frame
-		directional = directional and side_frame >= 4 and side_frame < 8 and up_frame >= 8
-	var ok := loaded and transparent and spawned and directional and readable_scale
-	print("DOGE_SPRITE_SMOKE loaded=%s transparent=%s spawned=%s directional=%s readable_scale=%s ok=%s" % [str(loaded).to_lower(), str(transparent).to_lower(), str(spawned).to_lower(), str(directional).to_lower(), str(readable_scale).to_lower(), str(ok).to_lower()])
+	var frames_populated := true
+	var role_distinct := true
+	var signatures := {}
+	var spawn_i := 0
+	for king in Game.KING_ORDER:
+		for kind in kinds:
+			var tex: Texture2D = load(Game.unit_sheet(king, kind))
+			loaded = loaded and tex != null and tex.get_width() == 192 and tex.get_height() == 192
+			if tex != null:
+				var img := tex.get_image()
+				transparent = transparent and img.get_pixel(0, 0).a < 0.01 and img.get_pixel(191, 191).a < 0.01
+				var first_signature := 0
+				for row in range(4):
+					for col in range(4):
+						var visible_pixels := 0
+						for y in range(row * 48, row * 48 + 48):
+							for x in range(col * 48, col * 48 + 48):
+								var px := img.get_pixel(x, y)
+								if px.a > 0.05:
+									visible_pixels += 1
+									if row == 0 and col == 0:
+										first_signature = (first_signature + int(px.r * 255.0) * 3 + int(px.g * 255.0) * 5 + int(px.b * 255.0) * 7 + x * 11 + y * 13) % 1000000007
+						frames_populated = frames_populated and visible_pixels > 180
+				var sig_key := "%s:%d" % [king, first_signature]
+				role_distinct = role_distinct and not signatures.has(sig_key)
+				signatures[sig_key] = true
+			var u := _spawn_unit(king, kind, 0, player_keep.position + Vector2(160 + spawn_i * 34, -40), 0, false)
+			spawn_i += 1
+			spawned = spawned and _node_alive(u) and u.king == king and u.kind == kind and u._sprite.texture != null
+			readable_scale = readable_scale and u._sprite.scale.x >= 1.5 and u._sprite.position.y < -15.0
+			u._face_dir(Vector2.RIGHT)
+			u._set_sprite_frame(1)
+			var side_frame: int = u._sprite.frame
+			u._face_dir(Vector2.UP)
+			u._set_sprite_frame(2)
+			var up_frame: int = u._sprite.frame
+			directional = directional and side_frame >= 4 and side_frame < 8 and up_frame >= 8
+	var ok := loaded and transparent and spawned and directional and readable_scale and frames_populated and role_distinct
+	print("FACTION_SPRITE_SMOKE loaded=%s transparent=%s spawned=%s directional=%s readable_scale=%s frames=%s distinct=%s ok=%s" % [str(loaded).to_lower(), str(transparent).to_lower(), str(spawned).to_lower(), str(directional).to_lower(), str(readable_scale).to_lower(), str(frames_populated).to_lower(), str(role_distinct).to_lower(), str(ok).to_lower()])
 	get_tree().quit(0 if ok else 1)
 
 func _opening_balance_smoke() -> void:
@@ -1090,8 +1119,7 @@ func _command_marker_smoke() -> void:
 
 func _unit_scale_smoke() -> void:
 	var loaded := true
-	var faction_scale := true
-	var doge_scale := true
+	var scale_ok := true
 	var click_area := true
 	var spawned := 0
 	for king in Game.KING_ORDER:
@@ -1100,13 +1128,10 @@ func _unit_scale_smoke() -> void:
 			loaded = loaded and tex != null and tex.get_width() == 192 and tex.get_height() == 192
 			var u := _spawn_unit(king, kind, 0, player_keep.position + Vector2(140 + spawned * 6, -130 + spawned * 3), 0, false)
 			spawned += 1
-			if king == "doge":
-				doge_scale = doge_scale and u._sprite.scale.x >= (1.2 if ["lancer", "siege"].has(kind) else 1.3)
-			else:
-				faction_scale = faction_scale and u._sprite.scale.x >= 1.5
+			scale_ok = scale_ok and u._sprite.scale.x >= 1.5
 			click_area = click_area and u.click_radius() >= (31.0 if kind == "siege" else 26.0)
-	var ok := loaded and faction_scale and doge_scale and click_area and spawned == Game.KING_ORDER.size() * Game.UNIT_KINDS.size()
-	print("UNIT_SCALE_SMOKE loaded=%s faction_scale=%s doge_scale=%s click=%s spawned=%d ok=%s" % [str(loaded).to_lower(), str(faction_scale).to_lower(), str(doge_scale).to_lower(), str(click_area).to_lower(), spawned, str(ok).to_lower()])
+	var ok := loaded and scale_ok and click_area and spawned == Game.KING_ORDER.size() * Game.UNIT_KINDS.size()
+	print("UNIT_SCALE_SMOKE loaded=%s scale=%s click=%s spawned=%d ok=%s" % [str(loaded).to_lower(), str(scale_ok).to_lower(), str(click_area).to_lower(), spawned, str(ok).to_lower()])
 	get_tree().quit(0 if ok else 1)
 
 func _tree_has_button_text(node: Node, text: String) -> bool:
@@ -1147,29 +1172,36 @@ func _capture() -> void:
 
 func _scatter_decals() -> void:
 	var cfg := Game.arena_cfg()
+	var biome := String(cfg.get("biome", "grass"))
 	var decals := [
 		"res://assets/terrain/terrain_detail_grass_clump.png",
 		"res://assets/terrain/terrain_detail_brush_leaf.png",
 		"res://assets/terrain/terrain_detail_field_stubble.png",
 	]
+	if biome == "sand":
+		decals = [
+			"res://assets/terrain/terrain_detail_sand_rock.png",
+			"res://assets/terrain/terrain_detail_dry_scrub.png",
+			"res://assets/terrain/terrain_detail_road_rut.png",
+		]
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 20260620
 	for i in range(int(cfg.decor)):
 		var s := Sprite2D.new()
 		s.texture = load(decals[rng.randi() % decals.size()])
 		s.position = Vector2(rng.randf() * WORLD.x, rng.randf() * WORLD.y)
-		s.scale = Vector2.ONE * (0.4 + rng.randf() * 0.5)
-		s.modulate = Color(1, 1, 1, 0.66)
+		s.scale = Vector2.ONE * ((0.3 + rng.randf() * 0.45) if biome == "sand" else (0.4 + rng.randf() * 0.5))
+		s.modulate = Color(1, 1, 1, 0.58 if biome == "sand" else 0.66)
 		s.z_index = -8
 		add_child(s)
-	if String(cfg.feature) == "forest":
+	if String(cfg.feature) == "forest" or String(cfg.feature) == "olive":
 		var trees := ["res://assets/terrain/resource_oak_stand.png", "res://assets/terrain/resource_pine_stand.png"]
-		for i in range(44):
+		for i in range(38 if String(cfg.feature) == "olive" else 44):
 			var t := Sprite2D.new()
 			t.texture = load(trees[rng.randi() % trees.size()])
 			t.position = Vector2(rng.randf() * WORLD.x, rng.randf() * WORLD.y)
-			t.scale = Vector2.ONE * (0.55 + rng.randf() * 0.35)
-			t.modulate = Color(1, 1, 1, 0.88)
+			t.scale = Vector2.ONE * (0.48 + rng.randf() * 0.28)
+			t.modulate = Color("b6c37c", 0.82) if String(cfg.feature) == "olive" else Color(1, 1, 1, 0.88)
 			t.z_index = 4 + int(t.position.y / 48.0)
 			add_child(t)
 
@@ -1274,7 +1306,7 @@ func _process_queue(delta: float) -> void:
 		queued_pop = max(0, queued_pop - 1)
 		var u := _spawn_unit(Game.player_king, kind, 0, player_keep.position + Vector2(randf_range(-40, 40), 70))
 		_apply_new_unit_default_order(u, 0)
-		Game.log_event("%s ready" % Game.UNIT_NAME.get(kind, kind.to_upper()))
+		Game.log_event("%s ready" % Game.unit_label(kind, Game.player_king))
 
 func _apply_new_unit_default_order(u: Unit, team: int) -> void:
 	if not _node_alive(u):
@@ -2372,6 +2404,9 @@ func _nearest_enemy_unit_for_team(p: Vector2, r: float, team: int):
 func _controlled_team() -> int:
 	return Game.my_team if Game.net_mode != "" else 0
 
+func _controlled_king() -> String:
+	return Game.rival_king if _controlled_team() == 1 else Game.player_king
+
 func _is_joiner() -> bool:
 	return Game.net_mode == "join"
 
@@ -2429,7 +2464,7 @@ func hud_queue_summary() -> Dictionary:
 		return {
 			"count": count,
 			"kind": kind,
-			"name": String(Game.UNIT_NAME.get(kind, kind.to_upper())),
+			"name": Game.unit_label(kind, _controlled_king()),
 			"pct": clampi(pct, 0, 100),
 			"seconds": int(ceil(left)),
 		}
@@ -2490,7 +2525,7 @@ func hud_selection_summary() -> Dictionary:
 	for kind in Game.UNIT_KINDS:
 		var n := int(counts.get(kind, 0))
 		if n > 0:
-			parts.append("%d %s" % [n, Game.UNIT_NAME.get(kind, kind.to_upper())])
+			parts.append("%d %s" % [n, Game.unit_label(kind, _controlled_king())])
 	var active_orders := 0
 	active_orders += 1 if attacking > 0 else 0
 	active_orders += 1 if gathering > 0 else 0
@@ -2971,7 +3006,7 @@ func _apply_snapshot(snap: Dictionary) -> void:
 		seen_units[id] = true
 		var u: Unit = _units_by_net_id.get(id, null)
 		if not _node_alive(u):
-			u = _spawn_unit(String(d.get("king", "fartcoin")), String(d.get("kind", "villager")), int(d.get("team", 0)), Vector2(float(d.get("x", 0)), float(d.get("y", 0))), id, false)
+			u = _spawn_unit(String(d.get("king", "doge")), String(d.get("kind", "villager")), int(d.get("team", 0)), Vector2(float(d.get("x", 0)), float(d.get("y", 0))), id, false)
 		u.king = String(d.get("king", u.king))
 		u.kind = String(d.get("kind", u.kind))
 		u.team = int(d.get("team", u.team))
@@ -3137,15 +3172,62 @@ func _draw_feature(feature: String, rng: RandomNumberGenerator) -> void:
 			for off in [-26.0, 26.0]:
 				draw_line(Vector2(WORLD.x * 0.5 + off, 0), Vector2(WORLD.x * 0.5 + off, WORLD.y), Color("2f1c10", 0.16), 2.0)
 				draw_line(Vector2(0, WORLD.y * 0.5 + off), Vector2(WORLD.x, WORLD.y * 0.5 + off), Color("2f1c10", 0.16), 2.0)
+		"checkpoint":
+			var road_edge := Color("4a3320", 0.34)
+			var road_main := Color("8f7148", 0.62)
+			draw_rect(Rect2(0.0, WORLD.y * 0.48 - 54.0, WORLD.x, 108.0), road_edge)
+			draw_rect(Rect2(0.0, WORLD.y * 0.48 - 36.0, WORLD.x, 72.0), road_main)
+			draw_rect(Rect2(WORLD.x * 0.5 - 110.0, WORLD.y * 0.48 - 94.0, 220.0, 188.0), Color("2d2117", 0.20))
+			for x in [WORLD.x * 0.5 - 76.0, WORLD.x * 0.5 + 76.0]:
+				draw_rect(Rect2(x - 9.0, WORLD.y * 0.48 - 90.0, 18.0, 180.0), Color("d8c28b", 0.68))
+				draw_rect(Rect2(x - 5.0, WORLD.y * 0.48 - 90.0, 10.0, 180.0), Color("4f3a23", 0.58))
+			draw_line(Vector2(WORLD.x * 0.5 - 140.0, WORLD.y * 0.48), Vector2(WORLD.x * 0.5 + 140.0, WORLD.y * 0.48), Color("e9d9a7", 0.68), 4.0)
+		"wadi":
+			var pts := PackedVector2Array()
+			var xx := 0
+			while xx <= int(WORLD.x):
+				var t := float(xx) / WORLD.x
+				pts.append(Vector2(float(xx), WORLD.y * 0.56 + sin(t * TAU * 1.45) * 88.0))
+				xx += 48
+			draw_polyline(pts, Color("7a5633", 0.36), 112.0, true)
+			draw_polyline(pts, Color("b98f57", 0.50), 80.0, true)
+			draw_polyline(pts, Color("ead39b", 0.34), 7.0, true)
+		"urban":
+			for i in range(18):
+				var p := Vector2(rng.randf() * WORLD.x, rng.randf() * WORLD.y)
+				var s := Vector2(58.0 + rng.randf() * 92.0, 36.0 + rng.randf() * 64.0)
+				draw_rect(Rect2(p - s * 0.5, s), Color("5a4a3d", 0.16))
+				draw_rect(Rect2(p - s * 0.42, s * 0.84), Color("c1aa7d", 0.18))
 		"dirt":
 			for i in range(14):
 				draw_circle(Vector2(rng.randf() * WORLD.x, rng.randf() * WORLD.y), 34.0 + rng.randf() * 58.0, Color(Game.COL_DIRT, 0.24))
+		"quarry":
+			for i in range(18):
+				var p := Vector2(rng.randf() * WORLD.x, rng.randf() * WORLD.y)
+				draw_circle(p, 32.0 + rng.randf() * 70.0, Color("7b735f", 0.24))
+				draw_circle(p + Vector2(8, -5), 14.0 + rng.randf() * 32.0, Color("dfc995", 0.18))
 		"patches":
 			for i in range(14):
 				draw_circle(Vector2(rng.randf() * WORLD.x, rng.randf() * WORLD.y), 40.0 + rng.randf() * 50.0, Color(Game.COL_DIRT, 0.30))
 		"plaza":
 			draw_rect(Rect2(WORLD * 0.5 - Vector2(230, 168), Vector2(460, 336)), Color("3c2717", 0.18))
 			draw_rect(Rect2(WORLD * 0.5 - Vector2(210, 150), Vector2(420, 300)), Color("8d7a5a", 0.46))
+		"coast":
+			draw_rect(Rect2(0.0, 0.0, WORLD.x * 0.18, WORLD.y), Color("18677a", 0.48))
+			draw_rect(Rect2(WORLD.x * 0.18, 0.0, WORLD.x * 0.035, WORLD.y), Color("ead9a0", 0.46))
+			for i in range(18):
+				var y := rng.randf() * WORLD.y
+				draw_line(Vector2(WORLD.x * 0.17, y), Vector2(WORLD.x * 0.21, y + rng.randf_range(-18.0, 18.0)), Color("fff1c4", 0.16), 2.0)
+		"fence":
+			var x := WORLD.x * 0.52
+			draw_rect(Rect2(x - 36.0, 0.0, 72.0, WORLD.y), Color("4d3825", 0.20))
+			for y in range(0, int(WORLD.y), 54):
+				draw_line(Vector2(x - 22.0, y), Vector2(x + 22.0, y + 30.0), Color("d6c38b", 0.52), 2.0)
+				draw_line(Vector2(x + 22.0, y), Vector2(x - 22.0, y + 30.0), Color("d6c38b", 0.38), 2.0)
+		"scrub":
+			for i in range(26):
+				var p := Vector2(rng.randf() * WORLD.x, rng.randf() * WORLD.y)
+				draw_circle(p, 18.0 + rng.randf() * 34.0, Color("787a3e", 0.15))
 		"flowers":
 			var fr := RandomNumberGenerator.new()
 			fr.seed = 99
@@ -3158,9 +3240,22 @@ func _draw_feature(feature: String, rng: RandomNumberGenerator) -> void:
 func _draw() -> void:
 	var cfg := Game.arena_cfg()
 	var ground := Color(cfg.ground)
+	var biome := String(cfg.get("biome", "grass"))
 	draw_rect(Rect2(Vector2.ZERO, WORLD), ground)
-	if battlefield_grass:
-		draw_texture_rect(battlefield_grass, Rect2(Vector2.ZERO, WORLD), false, Color(1, 1, 1, 1))
+	var battlefield_texture := battlefield_sand if biome == "sand" else battlefield_grass
+	if battlefield_texture:
+		draw_texture_rect(battlefield_texture, Rect2(Vector2.ZERO, WORLD), false, Color(1, 1, 1, 1))
+	var variation_paths := SAND_VARIATION_PATHS if biome == "sand" else GRASS_VARIATION_PATHS
+	if variation_paths.size() > 0:
+		var tile_rng := RandomNumberGenerator.new()
+		tile_rng.seed = 260626
+		for i in range(18 if biome == "sand" else 10):
+			var tex: Texture2D = load(variation_paths[tile_rng.randi() % variation_paths.size()])
+			if tex == null:
+				continue
+			var size := Vector2(256, 256) * (0.8 + tile_rng.randf() * 0.45)
+			var pos := Vector2(tile_rng.randf() * WORLD.x, tile_rng.randf() * WORLD.y)
+			draw_texture_rect(tex, Rect2(pos - size * 0.5, size), false, Color(1, 1, 1, 0.16 if biome == "sand" else 0.20))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 77
 	_draw_feature(String(cfg.feature), rng)

@@ -10,12 +10,12 @@ config_version=5
 
 [application]
 
-config/name="Age of Memepires"
-config/description="Pixel RTS wager-battle — Solana meme kings."
+config/name="Israel vs Palestine"
+config/description="Pixel RTS wager-battle for israelvspalestine.org."
 run/main_scene="res://scenes/StartMenu.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/show_image=false
-config/icon="res://assets/portraits/king_portrait_fartcoin.png"
+config/icon="res://assets/ui/faction_icon_israel.png"
 
 [autoload]
 
@@ -27,8 +27,8 @@ Net="*res://scripts/Net.gd"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
-window/stretch/mode="disabled"
-window/stretch/aspect="ignore"
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 
 [input]
 

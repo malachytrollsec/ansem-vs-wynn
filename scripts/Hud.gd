@@ -43,7 +43,6 @@ var objectives_panel: PanelContainer
 var log_panel: PanelContainer
 var minimap_frame: PanelContainer
 var minimap_view: Control
-var matchup_holder: Control
 var _portrait_build_buttons: Array = []
 
 const RESOURCE_ICONS := {
@@ -79,7 +78,7 @@ const CONTROL_ICONS := {
 	"rally": "res://assets/ui/control_icon_rally.png",
 	"speed": "res://assets/ui/control_icon_speed.png",
 	"workers": "res://assets/ui/control_icon_workers.png",
-	"zoom": "res://assets/ui/control_icon_speed.png",
+	"zoom": "res://assets/ui/control_icon_zoom.png",
 }
 
 const UI_RD_PANEL := "res://assets/ui/ui_rd_panel_medium.png"
@@ -117,7 +116,6 @@ func _ready() -> void:
 	_build_objectives_panel()
 	_build_log_panel()
 	_build_minimap()
-	_build_matchup()
 	Game.resources_changed.connect(_refresh)
 	Game.selection_changed.connect(_on_selection)
 	Game.logged.connect(_on_log)
@@ -332,7 +330,7 @@ func _build_command_card() -> void:
 
 	for k in Game.UNIT_KINDS:
 		var kind: String = k
-		row.add_child(_cmd_button(Game.UNIT_NAME[kind], kind, func(): main.train_unit(kind)))
+		row.add_child(_cmd_button(Game.unit_label(kind, Game.player_king), kind, func(): main.train_unit(kind)))
 
 func _cmd_button(text: String, kind: String, action: Callable) -> Button:
 	var b := _accent_button(text)
@@ -506,53 +504,6 @@ func _process(_delta: float) -> void:
 		o["label"].text = ("[X] " if done else "[ ] ") + o["text"]
 		o["label"].add_theme_color_override("font_color", Color("43c865") if done else Game.COL_MUTED)
 
-func _portrait(king: String) -> TextureRect:
-	var t := TextureRect.new()
-	t.texture = load("res://assets/portraits/king_portrait_%s.png" % king)
-	t.custom_minimum_size = Vector2(32, 32)
-	t.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	return t
-
-func _name_label(text: String, col: Color) -> Label:
-	var l := Label.new()
-	l.text = text
-	l.add_theme_font_override("font", f_ui)
-	l.add_theme_font_size_override("font_size", 12)
-	l.add_theme_color_override("font_color", col)
-	l.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	return l
-
-func _build_matchup() -> void:
-	var holder := CenterContainer.new()
-	matchup_holder = holder
-	holder.set_anchors_preset(Control.PRESET_TOP_WIDE)
-	holder.offset_top = 42
-	holder.offset_bottom = 86
-	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(holder)
-
-	var panel := PanelContainer.new()
-	panel.add_theme_stylebox_override("panel", _panel())
-	holder.add_child(panel)
-
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 10)
-	panel.add_child(row)
-
-	var pk: Dictionary = Game.KINGS[Game.player_king]
-	var rk: Dictionary = Game.KINGS[Game.rival_king]
-	row.add_child(_portrait(Game.player_king))
-	row.add_child(_name_label(pk["name"], pk["color"]))
-	var vs := Label.new()
-	vs.text = "VS"
-	vs.add_theme_font_override("font", f_display)
-	vs.add_theme_font_size_override("font_size", 11)
-	vs.add_theme_color_override("font_color", Game.COL_ACCENT_BRIGHT)
-	vs.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	row.add_child(vs)
-	row.add_child(_name_label(rk["name"], rk["color"]))
-	row.add_child(_portrait(Game.rival_king))
-
 func _build_objectives_panel() -> void:
 	var panel := PanelContainer.new()
 	objectives_panel = panel
@@ -662,11 +613,6 @@ func _apply_responsive_layout() -> void:
 		topbar.offset_top = edge
 		topbar.offset_right = -edge
 
-	if is_instance_valid(matchup_holder):
-		matchup_holder.scale = Vector2.ONE
-		matchup_holder.offset_top = 82.0 if portrait else 96.0 if compact else 88.0
-		matchup_holder.offset_bottom = 126.0 if portrait else 140.0 if compact else 132.0
-
 	if is_instance_valid(side_panel):
 		side_panel.visible = not portrait
 		side_panel.scale = Vector2.ONE
@@ -758,8 +704,7 @@ func _refresh() -> void:
 		var kind: String = entry["kind"]
 		var afford: bool = main.hud_can_afford(kind)
 		var b: Button = entry["btn"]
-		var cost := Game.cost_text(kind)
-		b.text = String(entry.get("label", kind.to_upper())) if cost == "" else "%s  %s" % [String(entry.get("label", kind.to_upper())), cost]
+		b.text = String(entry.get("label", kind.to_upper()))
 		b.disabled = not afford
 		b.modulate = Color(1, 1, 1, 1.0) if afford else Color(1, 1, 1, 0.45)
 

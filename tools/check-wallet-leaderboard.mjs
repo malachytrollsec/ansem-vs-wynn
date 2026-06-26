@@ -24,7 +24,7 @@ try {
   const address = base58Encode(publicKey.export({ format: "der", type: "spki" }).subarray(-32));
 
   const challenge = await postJson("/wallet-challenge", { address });
-  assert(challenge.ok && challenge.address === address && challenge.message.includes("Age of Memepires wallet login"), "wallet challenge unusable");
+  assert(challenge.ok && challenge.address === address && challenge.message.includes("Israel vs Palestine wallet login"), "wallet challenge unusable");
 
   const badLogin = await postJson("/wallet-login", { address, nonce: challenge.nonce, signature: "bad" }, false);
   assert(badLogin.status === 401 && badLogin.body?.error === "bad-signature", "bad signature should be rejected");
@@ -65,18 +65,18 @@ function leaderboardEntry(id, wallet, extra = {}) {
     id,
     wallet,
     kingId: "doge",
-    king: "$DOGE",
+    king: "ISRAEL",
     rivalId: "pepe",
-    rival: "$PEPE",
+    rival: "PALESTINE",
     result: "won",
-    wave: 3,
-    kills: 11,
+    wave: 99,
+    kills: 999,
     seconds: 144,
     arena: "ruins",
     pressure: "standard",
     stake: 500,
     tax: 25,
-    payout: 902.5,
+    payout: 1000000,
     ...extra,
   };
 }

@@ -43,12 +43,12 @@ const server = createServer(async (req, res) => {
       return json(res, roomProofPayload(sanitizeCode(url.searchParams.get("room"))));
     }
     if (url.pathname === "/room-kit") {
-      const room = sanitizeCode(url.searchParams.get("room")) || "MEMES";
-      const player = sanitizeKing(url.searchParams.get("player") || url.searchParams.get("king") || "fartcoin");
+      const room = sanitizeCode(url.searchParams.get("room")) || "IVP";
+      const player = sanitizeKing(url.searchParams.get("player") || url.searchParams.get("king") || "doge");
       const rival = sanitizeKing(url.searchParams.get("rival") || "pepe");
       return json(res, {
         room,
-        game: "Age of Memepires",
+        game: "Israel vs Palestine",
         brand: brandPayload(),
         player: kingProfile(player, req),
         rival: kingProfile(rival, req),
@@ -555,7 +555,7 @@ function roomProofPayload(filterCode = "") {
 function factionsPayload(req, url) {
   return {
     version: "mempires-factions-v1",
-    game: "Age of Memepires",
+    game: "Israel vs Palestine",
     brand: brandPayload(),
     walletAuth: walletAuthPayload(req),
     verifiedLeaderboard: verifiedLeaderboardPayload(req),
@@ -563,10 +563,10 @@ function factionsPayload(req, url) {
     arenas: arenasPayload(),
     endpoints: {
       self: `${originUrl(req)}${url.pathname}`,
-      roomKitUrl: `${originUrl(req)}/room-kit?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "MEMES")}`,
-      roomStatusUrl: `${originUrl(req)}/room-status?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "MEMES")}`,
-      roomEventsUrl: `${originUrl(req)}/room-events?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "MEMES")}`,
-      roomProofUrl: `${originUrl(req)}/room-proof?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "MEMES")}`,
+      roomKitUrl: `${originUrl(req)}/room-kit?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "IVP")}`,
+      roomStatusUrl: `${originUrl(req)}/room-status?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "IVP")}`,
+      roomEventsUrl: `${originUrl(req)}/room-events?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "IVP")}`,
+      roomProofUrl: `${originUrl(req)}/room-proof?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "IVP")}`,
       leaderboardUrl: `${originUrl(req)}/leaderboard`,
     },
   };
@@ -575,10 +575,10 @@ function factionsPayload(req, url) {
 function brandPayload() {
   return {
     version: "mempires-brand-v1",
-    name: "Age of Memepires",
-    ticker: "MEMP",
+    name: "Israel vs Palestine",
+    ticker: "IVP",
     chain: "Solana",
-    description: "Godot web RTS wager wars with meme kings, wallet-backed leaderboards, room relay, and proof streams.",
+    description: "Godot web RTS wager wars with two factions, wallet-backed leaderboards, room relay, and proof streams.",
   };
 }
 
@@ -626,19 +626,18 @@ function verifiedLeaderboardPayload(req) {
 }
 
 function kingsPayload(req) {
-  return ["fartcoin", "pepe", "doge", "pnut"].map((id) => kingProfile(id, req));
+  return ["doge", "pepe"].map((id) => kingProfile(id, req));
 }
 
 function kingProfile(id, req) {
   const clean = sanitizeKing(id);
   const labels = {
-    fartcoin: ["$FARTCOIN", "Gas Crown"],
-    pepe: ["$PEPE", "Frog Throne"],
-    doge: ["$DOGE", "Doge Keep"],
-    pnut: ["$PNUT", "Peanut Court"],
+    doge: ["ISRAEL", "Iron Dome"],
+    pepe: ["PALESTINE", "Olive Front"],
   };
-  const [name, kingdom] = labels[clean] || labels.fartcoin;
-  const portrait = `assets/portraits/king_portrait_${clean}.png`;
+  const [name, kingdom] = labels[clean] || labels.doge;
+  const assetId = clean === "pepe" ? "palestine" : "israel";
+  const portrait = `assets/portraits/faction_portrait_${assetId}.png`;
   return {
     id: clean,
     name,
@@ -647,29 +646,38 @@ function kingProfile(id, req) {
     portraitUrl: `${originUrl(req)}/${portrait}`,
     units: unitKinds,
     bonus: {
-      fartcoin: "faster gathering",
-      pepe: "faster movement",
-      doge: "tougher units",
-      pnut: "higher attack",
+      doge: "tougher infantry and support fire",
+      pepe: "faster movement and gathering",
     }[clean],
   };
 }
 
 function arenasPayload() {
-  return [
-    "meadow", "creek", "garden", "ruins",
-    "grove", "crossroads", "pond", "courtyard",
-    "orchard", "quarry", "wildflower", "millpond",
-    "isle", "festival", "causeway", "bannerfield",
-  ].map((id) => ({
-    id,
-    label: id.replace(/(^|_)([a-z])/g, (_, prefix, char) => `${prefix}${char.toUpperCase()}`).replace(/-/g, " "),
-  }));
+  return Object.entries({
+    meadow: "Negev Flats",
+    creek: "Wadi Crossing",
+    garden: "Olive Grove",
+    ruins: "Old City Ruins",
+    grove: "Hilltop Grove",
+    crossroads: "Checkpoint Road",
+    pond: "Coastal Reservoir",
+    courtyard: "Stone Courtyard",
+    orchard: "Olive Orchard",
+    quarry: "Limestone Quarry",
+    wildflower: "Spring Scrubland",
+    millpond: "Dry Wadi",
+    isle: "Coastal Dunes",
+    festival: "Market Street",
+    causeway: "Border Causeway",
+    bannerfield: "Fence Line",
+  }).map(([id, label]) => ({ id, label }));
 }
 
 function sanitizeKing(value) {
   const id = String(value || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32);
-  return ["fartcoin", "pepe", "doge", "pnut"].includes(id) ? id : "fartcoin";
+  if (["israel", "idf"].includes(id)) return "doge";
+  if (["palestine", "pal"].includes(id)) return "pepe";
+  return ["doge", "pepe"].includes(id) ? id : "doge";
 }
 
 function delay(ms) {
@@ -688,11 +696,11 @@ function walletChallengePayload(body = {}) {
   const nonce = randomBytes(16).toString("hex");
   const issuedAt = new Date().toISOString();
   const message = [
-    "Age of Memepires wallet login",
+    "Israel vs Palestine wallet login",
     `Wallet: ${address}`,
     `Nonce: ${nonce}`,
     `Issued: ${issuedAt}`,
-    "Only sign this message for Age of Memepires leaderboard identity.",
+    "Only sign this message for Israel vs Palestine leaderboard identity.",
   ].join("\n");
   const expiresAtMs = Date.now() + challengeTtlMs;
   challenges.set(nonce, { address, message, expiresAtMs });
@@ -864,7 +872,7 @@ function normalizeLeaderboardEntry(item = {}, walletAuth = null) {
   const seconds = clampInt(item.seconds || 0, 0, 86400);
   const score = clampInt(item.score || leaderboardScore({ result, wave, kills, seconds, payout }), 0, 9999999);
   const endedAt = String(item.endedAt || new Date().toISOString()).slice(0, 40);
-  const kingId = cleanId(item.kingId || item.king || "fartcoin", "fartcoin");
+  const kingId = cleanId(item.kingId || item.king || "doge", "doge");
   const rivalId = cleanId(item.rivalId || item.rivalKing || "pepe", "pepe");
   const id = String(item.id || `${kingId}-${rivalId}-${endedAt}-${result}`).replace(/[^a-zA-Z0-9:._-]/g, "").slice(0, 96);
   const wallet = cleanWallet(item.wallet);

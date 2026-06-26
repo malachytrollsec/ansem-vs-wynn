@@ -1,6 +1,6 @@
-# Age of Memepires
+# Israel vs Palestine
 
-Godot port of the browser RTS wager-battle prototype. Pick a meme king, choose pressure and arena, build an economy, train units, crack the rival keep, and post wallet-backed results to the local leaderboard.
+Godot RTS wager-battle for israelvspalestine.org. Pick Israel or Palestine, choose pressure and arena, build an economy, train units, crack the rival keep, and post wallet-backed results to the local leaderboard.
 
 ## Run
 
@@ -13,9 +13,9 @@ Open `http://127.0.0.1:8799/`.
 Shareable browser params are supported for game setup and multiplayer room entry:
 
 ```text
-http://127.0.0.1:8799/?king=doge&rival=pepe&pressure=rush&arena=creek&stake=500&start=1
-http://127.0.0.1:8799/?room=MEMES&host=1&king=fartcoin&rival=pepe&stake=250
-http://127.0.0.1:8799/?room=MEMES&join=1&king=pepe&stake=250
+http://127.0.0.1:8799/?king=israel&rival=palestine&pressure=rush&arena=creek&stake=500&start=1
+http://127.0.0.1:8799/?room=IVP&host=1&king=israel&rival=palestine&stake=250
+http://127.0.0.1:8799/?room=IVP&join=1&king=palestine&rival=israel&stake=250
 ```
 
 For a fresh web export:
@@ -26,8 +26,8 @@ npm run export:web
 
 ## Play Surface
 
-- Four kings: `$FARTCOIN`, `$PEPE`, `$DOGE`, and `$PNUT`.
-- Sixteen arenas with data-driven terrain dressing.
+- Two sides: Israel and Palestine.
+- Sixteen arid arenas with data-driven terrain dressing.
 - Pressure modes: standard, rush, and siege.
 - RTS loop: villagers, army units, housing, forge, towers, market income, upgrades, rally, minimap, waves, and win/loss results.
 - Wager ticket display: stake, tax, net, and win payout show on the menu, HUD, result banner, room snapshots, leaderboard rows, and multiplayer offer/accept/decline receipts.

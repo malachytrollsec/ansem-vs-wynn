@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
-		<title>Age of Memepires</title>
+		<title>Israel vs Palestine</title>
 		<style>
 html, body, #canvas {
 	margin: 0;
@@ -23,18 +23,25 @@ body {
 	touch-action: none;
 }
 
+#memepire-viewport {
+	position: fixed;
+	inset: 0;
+	width: 100vw !important;
+	height: 100vh !important;
+	overflow: hidden;
+	background-color: #06101f;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
 #canvas {
 	display: block;
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	width: 1280px;
-	height: 720px;
-	max-width: calc(100vw - 24px);
-	max-height: calc(100vh - 24px);
-	transform: translate(-50%, -50%);
-	contain: strict;
-	clip-path: inset(0);
+	width: min(100vw, calc(100vh * 1.777777778)) !important;
+	height: min(100vh, calc(100vw * 0.5625)) !important;
+	max-width: none !important;
+	max-height: none !important;
+	background-color: #06101f;
 	image-rendering: pixelated;
 }
 
@@ -111,9 +118,11 @@ body {
 <script>window.__memepireWalletAddress="";window.__memepireWalletToken="";window.__memepireWalletVerified=false;window.__memepireWalletError="";</script>
 	</head>
 	<body>
-		<canvas id="canvas">
-			Your browser does not support the canvas tag.
-		</canvas>
+		<div id="memepire-viewport">
+			<canvas id="canvas">
+				Your browser does not support the canvas tag.
+			</canvas>
+		</div>
 
 		<noscript>
 			Your browser does not support JavaScript.
@@ -125,27 +134,20 @@ body {
 			<div id="status-notice"></div>
 		</div>
 
+		<script>
+window.__memepireNativeDevicePixelRatio = window.devicePixelRatio || 1;
+Object.defineProperty(window, 'devicePixelRatio', {
+	get: function () {
+		return 1;
+	},
+	configurable: true,
+});
+		</script>
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4234964,"index.wasm":38034280},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":0,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":4278288,"index.wasm":38034280},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
-const memepireCanvas = document.getElementById('canvas');
-function memepireResizeCanvas() {
-	if (!memepireCanvas) return;
-	memepireCanvas.width = 1280;
-	memepireCanvas.height = 720;
-	const dpr = Number(window.devicePixelRatio) || 1;
-	const pixelSafeScale = dpr > 0 && dpr < 1 ? dpr : 1;
-	const fitScale = Math.min(1, (window.innerWidth - 24) / 1280, (window.innerHeight - 24) / 720);
-	const scale = Math.min(pixelSafeScale, fitScale);
-	const cssWidth = Math.max(1, Math.floor(1280 * scale));
-	const cssHeight = Math.max(1, Math.floor(720 * scale));
-	memepireCanvas.style.width = cssWidth + 'px';
-	memepireCanvas.style.height = cssHeight + 'px';
-}
-window.addEventListener('resize', memepireResizeCanvas);
-memepireResizeCanvas();
 
 (function () {
 	const statusOverlay = document.getElementById('status');
@@ -243,6 +245,17 @@ memepireResizeCanvas();
 			},
 		}).then(() => {
 			setStatusMode('hidden');
+			function memepireFitCanvas() {
+				const canvas = document.getElementById('canvas');
+				if (!canvas) return;
+				canvas.width = 1280;
+				canvas.height = 720;
+				canvas.style.width = 'min(100vw, calc(100vh * 1.777777778))';
+				canvas.style.height = 'min(100vh, calc(100vw * 0.5625))';
+			}
+			window.addEventListener('resize', memepireFitCanvas);
+			memepireFitCanvas();
+			setTimeout(memepireFitCanvas, 250);
 		}, displayFailureNotice);
 	}
 }());

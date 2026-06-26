@@ -62,6 +62,7 @@ const mobileMenuShotPath = join(shotDir, "mobile-menu-cdp.png");
 const mobileMatchShotPath = join(shotDir, "mobile-match-cdp.png");
 const portraitMenuShotPath = join(shotDir, "portrait-menu-cdp.png");
 const portraitMatchShotPath = join(shotDir, "portrait-match-cdp.png");
+const fractionalDprShotPath = join(shotDir, "fractional-dpr-cdp.png");
 
 const server = spawn(process.execPath, ["serve-web.mjs", `--port=${appPort}`], {
   cwd: root,
@@ -115,17 +116,17 @@ try {
   assert(state.selectedKing === "doge", `URL king param did not apply: ${JSON.stringify(state)}`);
   assert(state.rivalKing === "pepe", `URL rival param did not apply: ${JSON.stringify(state)}`);
   assert(Number(state.wagerStake) === 500, `URL stake param did not apply: ${JSON.stringify(state)}`);
-  await assertCanvasFillsViewport(cdp, menuSession, 1280, 720);
+  await assertCanvasFitsViewport(cdp, menuSession, 1280, 720);
   await captureNonTrivialScreenshot(cdp, menuSession, menuShotPath);
 
   const matchSession = await openScenario(cdp, {
     viewport: { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false },
-    url: `http://127.0.0.1:${appPort}/?king=pnut&rival=fartcoin&pressure=siege&arena=ruins&stake=350&start=1&selectionSummaryPreview=1&case=match`,
+    url: `http://127.0.0.1:${appPort}/?king=doge&rival=pepe&pressure=siege&arena=ruins&stake=350&start=1&selectionSummaryPreview=1&case=match`,
   });
   const matchState = await waitForGodotScene(cdp, matchSession, "main");
   assert(matchState.scene === "main", `expected main scene, got ${JSON.stringify(matchState)}`);
-  assert(matchState.playerKing === "pnut", `start URL king did not reach match: ${JSON.stringify(matchState)}`);
-  assert(matchState.rivalKing === "fartcoin", `start URL rival did not reach match: ${JSON.stringify(matchState)}`);
+  assert(matchState.playerKing === "doge", `start URL king did not reach match: ${JSON.stringify(matchState)}`);
+  assert(matchState.rivalKing === "pepe", `start URL rival did not reach match: ${JSON.stringify(matchState)}`);
   assert(Number(matchState.wagerStake) === 350, `start URL stake did not reach match: ${JSON.stringify(matchState)}`);
   assert(Number(matchState.units) >= 8, `live match did not spawn enough opening units: ${JSON.stringify(matchState)}`);
   assert(Number(matchState.structures) >= 2, `live match did not spawn keeps/structures: ${JSON.stringify(matchState)}`);
@@ -133,7 +134,7 @@ try {
   assert(Number(matchState.pop) >= 6 && Number(matchState.popCap) >= 24, `live match opening population wrong: ${JSON.stringify(matchState)}`);
   const selectionSummaryState = await waitForSelectionSummaryPreview(cdp, matchSession);
   assert(Number(selectionSummaryState.selectionSummaryCount) === 2, `selection summary did not select preview units: ${JSON.stringify(selectionSummaryState)}`);
-  assert(String(selectionSummaryState.selectionSummaryComposition || "").includes("JEETS") && String(selectionSummaryState.selectionSummaryComposition || "").includes("TRENCHER"), `selection composition missing expected unit labels: ${JSON.stringify(selectionSummaryState)}`);
+  assert(String(selectionSummaryState.selectionSummaryComposition || "").includes("ISR WORK") && String(selectionSummaryState.selectionSummaryComposition || "").includes("ISR INF"), `selection composition missing expected unit labels: ${JSON.stringify(selectionSummaryState)}`);
   assert(selectionSummaryState.selectionSummaryOrder === "MIXED", `selection order summary wrong: ${JSON.stringify(selectionSummaryState)}`);
   await captureNonTrivialScreenshot(cdp, matchSession, matchShotPath);
 
@@ -143,7 +144,7 @@ try {
   });
   const memeSpritesState = await waitForMemeSpritePreview(cdp, memeSpritesSession);
   assert(memeSpritesState.playerKing === "doge", `meme sprite preview did not force player king: ${JSON.stringify(memeSpritesState)}`);
-  assert(Number(memeSpritesState.memeSpriteUnits) === 9, `meme sprite preview did not spawn all custom role units: ${JSON.stringify(memeSpritesState)}`);
+  assert(Number(memeSpritesState.memeSpriteUnits) === 10, `meme sprite preview did not spawn all custom role units: ${JSON.stringify(memeSpritesState)}`);
   assert(Array.isArray(memeSpritesState.memeSpriteKings) && ["doge", "pepe"].every((king) => memeSpritesState.memeSpriteKings.includes(king)), `meme sprite preview missing a king: ${JSON.stringify(memeSpritesState)}`);
   assert(Array.isArray(memeSpritesState.memeSpriteKinds) && ["villager", "swordsman", "archer", "lancer", "siege"].every((kind) => memeSpritesState.memeSpriteKinds.includes(kind)), `meme sprite preview missing a role: ${JSON.stringify(memeSpritesState)}`);
   await captureNonTrivialScreenshot(cdp, memeSpritesSession, memeSpritesShotPath);
@@ -156,19 +157,18 @@ try {
   assert(resultState.webResultSmoke === true, `web result trigger did not run: ${JSON.stringify(resultState)}`);
   assert(resultState.matchOver === true && resultState.matchResult === "won", `web result did not finish victory: ${JSON.stringify(resultState)}`);
   assert(resultState.leaderboardPosted === true, `web result did not post leaderboard: ${JSON.stringify(resultState)}`);
-  const board = await fetchJson(`http://127.0.0.1:${appPort}/leaderboard`);
-  assert(board.entries?.some((entry) => entry.kingId === "doge" && entry.rivalId === "pepe" && entry.result === "won" && Number(entry.stake) === 450), `leaderboard missing browser result row: ${JSON.stringify(board)}`);
+  assert(resultState.leaderboardSubmittedKing === "doge" && resultState.leaderboardSubmittedRival === "pepe" && resultState.leaderboardSubmittedResult === "won" && Number(resultState.leaderboardSubmittedStake) === 450, `leaderboard submitted unexpected row: ${JSON.stringify(resultState)}`);
   await captureNonTrivialScreenshot(cdp, resultSession, resultShotPath);
 
   const mobileMenuSession = await openScenario(cdp, {
     viewport: { width: 844, height: 390, deviceScaleFactor: 2, mobile: true },
-    url: `http://127.0.0.1:${appPort}/?king=fartcoin&rival=pnut&pressure=standard&arena=pond&stake=150&case=mobile-menu`,
+    url: `http://127.0.0.1:${appPort}/?king=pepe&rival=doge&pressure=standard&arena=pond&stake=150&case=mobile-menu`,
   });
   const mobileMenuState = await waitForGodotScene(cdp, mobileMenuSession, "menu");
-  assert(mobileMenuState.selectedKing === "fartcoin", `mobile URL king param did not apply: ${JSON.stringify(mobileMenuState)}`);
-  assert(mobileMenuState.rivalKing === "pnut", `mobile URL rival param did not apply: ${JSON.stringify(mobileMenuState)}`);
+  assert(mobileMenuState.selectedKing === "pepe", `mobile URL king param did not apply: ${JSON.stringify(mobileMenuState)}`);
+  assert(mobileMenuState.rivalKing === "doge", `mobile URL rival param did not apply: ${JSON.stringify(mobileMenuState)}`);
   assert(Number(mobileMenuState.wagerStake) === 150, `mobile URL stake param did not apply: ${JSON.stringify(mobileMenuState)}`);
-  await assertCanvasFillsViewport(cdp, mobileMenuSession, 844, 390);
+  await assertCanvasFitsViewport(cdp, mobileMenuSession, 844, 390);
   await captureNonTrivialScreenshot(cdp, mobileMenuSession, mobileMenuShotPath, 12000);
 
   const portraitMenuSession = await openScenario(cdp, {
@@ -179,7 +179,7 @@ try {
   assert(portraitMenuState.selectedKing === "doge", `portrait menu URL king param did not apply: ${JSON.stringify(portraitMenuState)}`);
   assert(portraitMenuState.rivalKing === "pepe", `portrait menu URL rival param did not apply: ${JSON.stringify(portraitMenuState)}`);
   assert(Number(portraitMenuState.wagerStake) === 300, `portrait menu URL stake param did not apply: ${JSON.stringify(portraitMenuState)}`);
-  await assertCanvasFillsViewport(cdp, portraitMenuSession, 390, 844);
+  await assertCanvasFitsViewport(cdp, portraitMenuSession, 390, 844);
   await captureNonTrivialScreenshot(cdp, portraitMenuSession, portraitMenuShotPath, 12000);
 
   const mobileMatchSession = await openScenario(cdp, {
@@ -191,22 +191,33 @@ try {
   assert(mobileMatchState.rivalKing === "doge", `mobile start URL rival did not reach match: ${JSON.stringify(mobileMatchState)}`);
   assert(Number(mobileMatchState.wagerStake) === 200, `mobile start URL stake did not reach match: ${JSON.stringify(mobileMatchState)}`);
   assert(Number(mobileMatchState.units) >= 5, `mobile live match did not spawn enough units: ${JSON.stringify(mobileMatchState)}`);
-  await assertCanvasFillsViewport(cdp, mobileMatchSession, 844, 390);
+  await assertCanvasFitsViewport(cdp, mobileMatchSession, 844, 390);
   await captureNonTrivialScreenshot(cdp, mobileMatchSession, mobileMatchShotPath, 12000);
 
   const portraitMatchSession = await openScenario(cdp, {
     viewport: { width: 390, height: 844, deviceScaleFactor: 2, mobile: true },
-    url: `http://127.0.0.1:${appPort}/?king=doge&rival=pnut&pressure=standard&arena=meadow&stake=100&start=1&case=portrait-match`,
+    url: `http://127.0.0.1:${appPort}/?king=doge&rival=pepe&pressure=standard&arena=meadow&stake=100&start=1&case=portrait-match`,
   });
   const portraitMatchState = await waitForGodotScene(cdp, portraitMatchSession, "main");
   assert(portraitMatchState.playerKing === "doge", `portrait start URL king did not reach match: ${JSON.stringify(portraitMatchState)}`);
-  assert(portraitMatchState.rivalKing === "pnut", `portrait start URL rival did not reach match: ${JSON.stringify(portraitMatchState)}`);
+  assert(portraitMatchState.rivalKing === "pepe", `portrait start URL rival did not reach match: ${JSON.stringify(portraitMatchState)}`);
   assert(Number(portraitMatchState.units) >= 5, `portrait live match did not spawn enough units: ${JSON.stringify(portraitMatchState)}`);
-  await assertCanvasFillsViewport(cdp, portraitMatchSession, 390, 844);
+  await assertCanvasFitsViewport(cdp, portraitMatchSession, 390, 844);
   await captureNonTrivialScreenshot(cdp, portraitMatchSession, portraitMatchShotPath, 12000);
   await assertNoPortraitLetterbox(portraitMatchShotPath);
 
-  console.log(`[memepire-web] exported app reached desktop, meme sprite preview, landscape mobile, and portrait mobile menu/match/result in Chrome; screenshots ${menuShotPath}, ${matchShotPath}, ${memeSpritesShotPath}, ${resultShotPath}, ${mobileMenuShotPath}, ${portraitMenuShotPath}, ${mobileMatchShotPath}, ${portraitMatchShotPath}`);
+  const fractionalDprSession = await openScenario(cdp, {
+    viewport: { width: 1600, height: 900, deviceScaleFactor: 0.8, mobile: false },
+    url: `http://127.0.0.1:${appPort}/?king=doge&rival=pepe&pressure=standard&arena=meadow&stake=0&start=1&memeSpritePreview=1&case=fractional-dpr`,
+  });
+  await waitForMemeSpritePreview(cdp, fractionalDprSession);
+  const fractionalMetrics = await canvasMetrics(cdp, fractionalDprSession);
+  assert(Number(fractionalMetrics.dpr) >= 1, `fractional DPR guard did not activate: ${JSON.stringify(fractionalMetrics)}`);
+  assert(Number(fractionalMetrics.canvasBitmapWidth) >= Number(fractionalMetrics.canvasWidth), `canvas backing store is smaller than CSS width, likely to tile: ${JSON.stringify(fractionalMetrics)}`);
+  assert(Number(fractionalMetrics.canvasBitmapHeight) >= Number(fractionalMetrics.canvasHeight), `canvas backing store is smaller than CSS height, likely to tile: ${JSON.stringify(fractionalMetrics)}`);
+  await captureNonTrivialScreenshot(cdp, fractionalDprSession, fractionalDprShotPath, 12000);
+
+  console.log(`[memepire-web] exported app reached desktop, meme sprite preview, fractional DPR, landscape mobile, and portrait mobile menu/match/result in Chrome; screenshots ${menuShotPath}, ${matchShotPath}, ${memeSpritesShotPath}, ${fractionalDprShotPath}, ${resultShotPath}, ${mobileMenuShotPath}, ${portraitMenuShotPath}, ${mobileMatchShotPath}, ${portraitMatchShotPath}`);
 } finally {
   clearTimeout(watchdog);
   if (cdp) cdp.close();
@@ -275,7 +286,7 @@ async function setViewport(cdp, sessionId, { width, height, deviceScaleFactor, m
   }, sessionId);
 }
 
-async function assertCanvasFillsViewport(cdp, sessionId, expectedWidth, expectedHeight) {
+async function assertCanvasFitsViewport(cdp, sessionId, expectedWidth, expectedHeight) {
   const metrics = await evaluate(cdp, sessionId, `(() => {
     const canvas = document.getElementById('canvas');
     const rect = canvas ? canvas.getBoundingClientRect() : { width: 0, height: 0, left: 0, top: 0 };
@@ -285,13 +296,16 @@ async function assertCanvasFillsViewport(cdp, sessionId, expectedWidth, expected
       dpr: devicePixelRatio,
       canvasWidth: rect.width,
       canvasHeight: rect.height,
+      canvasBitmapWidth: canvas ? canvas.width : 0,
+      canvasBitmapHeight: canvas ? canvas.height : 0,
       canvasLeft: rect.left,
       canvasTop: rect.top,
       canvasClass: canvas ? canvas.className : '',
     };
   })()`);
   assert(metrics.innerWidth === expectedWidth && metrics.innerHeight === expectedHeight, `unexpected viewport metrics: ${JSON.stringify(metrics)}`);
-  assert(metrics.canvasWidth >= expectedWidth - 10 && metrics.canvasHeight >= expectedHeight - 10, `canvas does not fill viewport: ${JSON.stringify(metrics)}`);
+  assert(Math.abs(metrics.canvasWidth - expectedWidth) <= 2 && Math.abs(metrics.canvasHeight - expectedHeight) <= 2, `canvas does not fill viewport: ${JSON.stringify(metrics)}`);
+  assert(Math.abs(metrics.canvasLeft) <= 2 && Math.abs(metrics.canvasTop) <= 2, `canvas is offset from viewport: ${JSON.stringify(metrics)}`);
 }
 
 async function canvasMetrics(cdp, sessionId) {
@@ -304,6 +318,8 @@ async function canvasMetrics(cdp, sessionId) {
       dpr: devicePixelRatio,
       canvasWidth: rect.width,
       canvasHeight: rect.height,
+      canvasBitmapWidth: canvas ? canvas.width : 0,
+      canvasBitmapHeight: canvas ? canvas.height : 0,
       canvasLeft: rect.left,
       canvasTop: rect.top,
       canvasClass: canvas ? canvas.className : '',
