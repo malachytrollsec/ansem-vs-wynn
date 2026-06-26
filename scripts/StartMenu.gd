@@ -155,12 +155,13 @@ func _ready() -> void:
 	var vb := VBoxContainer.new()
 	menu_box = vb
 	menu_box.alignment = BoxContainer.ALIGNMENT_CENTER
-	menu_box.add_theme_constant_override("separation", 10)
+	menu_box.add_theme_constant_override("separation", 7)
 	center_holder.add_child(menu_box)
 
 	title_logo = TextureRect.new()
 	title_logo.texture = load(MAIN_MENU_LOGO)
-	title_logo.custom_minimum_size = Vector2(360, 168)
+	title_logo.custom_minimum_size = Vector2(320, 132)
+	title_logo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	title_logo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	title_logo.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	title_logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -214,7 +215,8 @@ func _ready() -> void:
 	lb.pressed.connect(func(): _cycle_arena(-1))
 	arow.add_child(lb)
 	arena_lbl = _label(Game.ARENAS[Game.ARENA_ORDER[arena_idx]]["label"], f_ui, 14, Game.COL_ACCENT_BRIGHT)
-	arena_lbl.custom_minimum_size = Vector2(150, 0)
+	arena_lbl.custom_minimum_size = Vector2(250, 0)
+	arena_lbl.clip_text = true
 	arow.add_child(arena_lbl)
 	var rb := _small_button(">")
 	rb.pressed.connect(func(): _cycle_arena(1))
@@ -233,7 +235,8 @@ func _ready() -> void:
 	wminus.pressed.connect(func(): _bump_wager(-50))
 	wrow.add_child(wminus)
 	wager_lbl = _label("", f_ui, 14, Game.COL_ACCENT_BRIGHT)
-	wager_lbl.custom_minimum_size = Vector2(230, 0)
+	wager_lbl.custom_minimum_size = Vector2(340, 0)
+	wager_lbl.clip_text = true
 	wrow.add_child(wager_lbl)
 	var wplus := _small_button("+")
 	wplus.pressed.connect(func(): _bump_wager(50))
@@ -242,6 +245,7 @@ func _ready() -> void:
 	var launch_panel := PanelContainer.new()
 	launch_panel.custom_minimum_size = Vector2(760, 64)
 	launch_panel.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	launch_panel.visible = false
 	launch_panel.add_theme_stylebox_override("panel", _texture_style(UI_RD_BUTTON, 18.0, 13.0, Color(0.82, 0.9, 1.0, 1.0)))
 	setup_row.add_child(launch_panel)
 	var launch_box := VBoxContainer.new()
@@ -506,9 +510,10 @@ func _apply_responsive_layout() -> void:
 		center_holder.offset_bottom = -lift
 	if is_instance_valid(menu_box):
 		menu_box.pivot_offset = menu_box.size * 0.5
-		menu_box.scale = Vector2(1.22, 1.22) if portrait else Vector2(1.08, 1.08)
+		var desktop_scale := 0.96 if display.y <= 900.0 else 1.0
+		menu_box.scale = Vector2(1.08, 1.08) if portrait else Vector2(desktop_scale, desktop_scale)
 	if is_instance_valid(title_logo):
-		title_logo.custom_minimum_size = Vector2(300, 142) if portrait else Vector2(380, 176)
+		title_logo.custom_minimum_size = Vector2(260, 110) if portrait else Vector2(320, 132)
 	if is_instance_valid(leaderboard_panel):
 		leaderboard_panel.visible = not portrait
 	if is_instance_valid(wallet_btn):
@@ -986,7 +991,7 @@ func _label(text: String, font: FontFile, size: int, col: Color) -> Label:
 func _card(king: String) -> Button:
 	var data: Dictionary = Game.KINGS[king]
 	var b := Button.new()
-	b.custom_minimum_size = Vector2(188, 196)
+	b.custom_minimum_size = Vector2(174, 176)
 	b.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	b.add_theme_stylebox_override("normal", _texture_style(UI_RD_PANEL, 22.0, 8.0))
 	b.add_theme_stylebox_override("hover", _texture_style(UI_RD_PANEL_LARGE, 26.0, 8.0, Color(1.08, 1.08, 1.08, 1.0)))
@@ -1000,8 +1005,8 @@ func _card(king: String) -> Button:
 	inset.set_anchors_preset(Control.PRESET_FULL_RECT)
 	inset.offset_left = 22
 	inset.offset_right = -22
-	inset.offset_top = 24
-	inset.offset_bottom = -30
+	inset.offset_top = 22
+	inset.offset_bottom = -22
 	inset.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_child(inset)
 	var col := VBoxContainer.new()
@@ -1012,7 +1017,10 @@ func _card(king: String) -> Button:
 
 	var port := TextureRect.new()
 	port.texture = load(Game.portrait_path(king))
-	port.custom_minimum_size = Vector2(88, 82)
+	port.custom_minimum_size = Vector2(96, 96)
+	port.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	port.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	port.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	port.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	port.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	col.add_child(port)
