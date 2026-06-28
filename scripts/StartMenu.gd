@@ -167,7 +167,7 @@ func _ready() -> void:
 	title_logo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title_logo.visible = true
 	vb.add_child(title_logo)
-	vb.add_child(_label("TWO COMMANDS. ONE PIXEL WAR.", f_ui, 13, Game.COL_MUTED))
+	vb.add_child(_label("TWO TRADERS. ONE PIXEL WAR.", f_ui, 13, Game.COL_MUTED))
 	vb.add_child(_label("CHOOSE YOUR SIDE", f_ui, 14, Game.COL_BONE))
 
 	var row := HBoxContainer.new()
@@ -593,7 +593,7 @@ func _build_lobby() -> void:
 	url_edit = _line_edit(Net.relay_url)
 	vb.add_child(url_edit)
 	vb.add_child(_label("ROOM CODE", f_ui, 10, Game.COL_MUTED))
-	room_edit = _line_edit("MEMES")
+	room_edit = _line_edit("AVW")
 	vb.add_child(room_edit)
 	var brow := HBoxContainer.new()
 	brow.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -658,14 +658,14 @@ func _origin_url() -> String:
 
 func _room_code() -> String:
 	var code := room_edit.text.strip_edges().to_upper()
-	return code if code != "" else "IVP"
+	return code if code != "" else "AVW"
 
 func _room_links_text() -> String:
 	var room := _room_code()
 	var origin := _origin_url()
 	var stake := str(Game.wager_stake)
 	var rival := _selected_rival()
-	return "Israel vs Palestine room %s\nHost: %s/?room=%s&host=1&stake=%s&king=%s&rival=%s\nJoin: %s/?room=%s&join=1&stake=%s&king=%s&rival=%s\nRoom Kit: %s/room-kit?room=%s&player=%s&rival=%s" % [
+	return "Ansem vs Wynn room %s\nHost: %s/?room=%s&host=1&stake=%s&king=%s&rival=%s\nJoin: %s/?room=%s&join=1&stake=%s&king=%s&rival=%s\nRoom Kit: %s/room-kit?room=%s&player=%s&rival=%s" % [
 		room,
 		origin, room.uri_encode(), stake, selected_king.uri_encode(), rival.uri_encode(),
 		origin, room.uri_encode(), stake, rival.uri_encode(), selected_king.uri_encode(),
@@ -676,10 +676,10 @@ func _room_links_smoke() -> void:
 	selected_king = "doge"
 	Game.rival_king = "pepe"
 	Game.wager_stake = 500
-	room_edit.text = "IVP"
+	room_edit.text = "AVW"
 	var links := _room_links_text()
-	var host_ok := links.contains("Host: http://127.0.0.1:8799/?room=IVP&host=1&stake=500&king=doge&rival=pepe")
-	var join_ok := links.contains("Join: http://127.0.0.1:8799/?room=IVP&join=1&stake=500&king=pepe&rival=doge")
+	var host_ok := links.contains("Host: http://127.0.0.1:8799/?room=AVW&host=1&stake=500&king=doge&rival=pepe")
+	var join_ok := links.contains("Join: http://127.0.0.1:8799/?room=AVW&join=1&stake=500&king=pepe&rival=doge")
 	print("ROOM_LINKS_SMOKE host=%s join=%s" % [str(host_ok).to_lower(), str(join_ok).to_lower()])
 	get_tree().quit(0 if host_ok and join_ok else 1)
 
@@ -792,9 +792,9 @@ func _truthy(v) -> bool:
 
 func _valid_king(v: String) -> String:
 	var key := v.strip_edges().to_lower().replace("$", "")
-	if key in ["israel", "idf"]:
+	if key in ["ansem", "alien", "blknoiz06"]:
 		return "doge"
-	if key in ["palestine", "pal"]:
+	if key in ["wynn", "predator", "jameswynnreal"]:
 		return "pepe"
 	return key if Game.KINGS.has(key) else ""
 

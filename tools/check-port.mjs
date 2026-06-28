@@ -192,7 +192,7 @@ const webShellFix = await read("tools/fix-web-shell.mjs");
 const factionSlicer = await read("tools/slice-faction-sprites.py");
 const html = await read("build/web/index.html");
 
-requireText("project", project, 'config/name="Israel vs Palestine"');
+requireText("project", project, 'config/name="Ansem vs Wynn"');
 requireText("project web viewport", project, "window/size/viewport_width=1280");
 requireText("project web viewport", project, "window/size/viewport_height=720");
 requireText("project web stretch", project, 'window/stretch/aspect="expand"');
@@ -363,7 +363,7 @@ requireText("main battlefield graphics", main, "BATTLEFIELD_SAND_PATH");
 requireText("main battlefield graphics", main, "SAND_VARIATION_PATHS");
 requireText("main battlefield graphics", main, 'biome == "sand"');
 requireText("main battlefield graphics", main, "terrain_sand_variation_03.png");
-requireText("game arena terrain", game, '"label": "Negev Flats"');
+requireText("game arena terrain", game, '"label": "Market Flats"');
 requireText("game arena terrain", game, '"feature": "checkpoint"');
 requireText("game arena terrain", game, '"biome": "sand"');
 requireText("main remote economy", main, "--remote-economy-smoke");
@@ -613,7 +613,7 @@ requireText("web shell fix", webShellFix, "logical-pixel fractional-DPR-safe she
 forbidText("web shell fix", webShellFix, "getPixelRatio:function(){return 1}");
 forbidText("web shell fix", webShellFix, "memepireCanvas.width = width");
 forbidText("web shell fix", webShellFix, "pixelSafeScale");
-requireText("web export", html, "<title>Israel vs Palestine</title>");
+requireText("web export", html, "<title>Ansem vs Wynn</title>");
 requireText("web export wallet", html, "__memepireWalletToken");
 forbidText("web export wallet", html, "window.MemepireWallet");
 requireText("web export shell", html, "html, body {");

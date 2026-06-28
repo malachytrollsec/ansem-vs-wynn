@@ -19,11 +19,11 @@ server.stderr.on("data", (chunk) => (serverOutput += chunk));
 
 try {
   await waitForHttp(`http://127.0.0.1:${port}/room-kit?room=${room}`);
-  const host = await openWs({ role: "host", from: "host", label: "ISRAEL", king: "doge" });
-  const joiner = await openWs({ role: "join", from: "join", label: "PALESTINE", king: "pepe" });
+  const host = await openWs({ role: "host", from: "host", label: "ANSEM", king: "doge" });
+  const joiner = await openWs({ role: "join", from: "join", label: "WYNN", king: "pepe" });
 
   await host.waitFor((msg) => msg.type === "hello" && msg.from === "join");
-  host.send({ type: "hello-ack", identity: { label: "ISRAEL", king: "doge" } });
+  host.send({ type: "hello-ack", identity: { label: "ANSEM", king: "doge" } });
   await joiner.waitFor((msg) => msg.type === "hello-ack" && msg.from === "host");
 
   host.send({
@@ -42,7 +42,7 @@ try {
       net: 237,
       winPayout: 450,
       fromKing: "doge",
-      fromLabel: "ISRAEL",
+      fromLabel: "ANSEM",
     },
   });
   const relayedOffer = await joiner.waitFor((msg) => msg.type === "wager-offer" && msg.wager?.ticketId === `${room}-ticket`);
@@ -64,7 +64,7 @@ try {
       net: 237,
       winPayout: 450,
       fromKing: "pepe",
-      fromLabel: "PALESTINE",
+      fromLabel: "WYNN",
     },
   });
   await host.waitFor((msg) => msg.type === "wager-receipt" && msg.wager?.wagerStatus === "accepted");
@@ -79,9 +79,9 @@ try {
       seconds: 7,
       wave: 0,
       kills: 1,
-      player: "ISRAEL",
+      player: "ANSEM",
       playerId: "doge",
-      rival: "PALESTINE",
+      rival: "WYNN",
       rivalId: "pepe",
       resources: { food: 260, timber: 180, memp: 50 },
       rivalResources: { food: 240, timber: 120, memp: 30 },
@@ -106,9 +106,9 @@ try {
       seconds: 42,
       wave: 1,
       kills: 3,
-      player: "ISRAEL",
+      player: "ANSEM",
       playerId: "doge",
-      rival: "PALESTINE",
+      rival: "WYNN",
       rivalId: "pepe",
       resources: { food: 310, timber: 205, memp: 75 },
       rivalResources: { food: 90, timber: 45, memp: 10 },
@@ -181,9 +181,9 @@ try {
   const leaderboardEntry = {
     id: `${room}-result`,
     kingId: "doge",
-    king: "ISRAEL",
+    king: "ANSEM",
     rivalId: "pepe",
-    rival: "PALESTINE",
+    rival: "WYNN",
     result: "won",
     wave: 99,
     kills: 999,
@@ -205,8 +205,8 @@ try {
   joiner.close();
 
   const staleTicketRoom = `${room}X`;
-  const staleHost = await openWs({ roomCode: staleTicketRoom, role: "host", from: "host", label: "ISRAEL", king: "doge" });
-  const staleJoiner = await openWs({ roomCode: staleTicketRoom, role: "join", from: "join", label: "PALESTINE", king: "pepe" });
+  const staleHost = await openWs({ roomCode: staleTicketRoom, role: "host", from: "host", label: "ANSEM", king: "doge" });
+  const staleJoiner = await openWs({ roomCode: staleTicketRoom, role: "join", from: "join", label: "WYNN", king: "pepe" });
   await staleHost.waitFor((msg) => msg.type === "hello" && msg.from === "join");
   staleHost.send({
     type: "wager-offer",
@@ -218,7 +218,7 @@ try {
       net: 949,
       winPayout: 1803,
       fromKing: "doge",
-      fromLabel: "ISRAEL",
+      fromLabel: "ANSEM",
     },
   });
   await staleJoiner.waitFor((msg) => msg.type === "wager-offer" && msg.wager?.ticketId === `${staleTicketRoom}-ticket`);
@@ -231,9 +231,9 @@ try {
       time: "00:09",
       seconds: 9,
       wave: 0,
-      player: "ISRAEL",
+      player: "ANSEM",
       playerId: "doge",
-      rival: "PALESTINE",
+      rival: "WYNN",
       rivalId: "pepe",
       units: [{ id: 1 }],
       structures: [{ id: 2 }],

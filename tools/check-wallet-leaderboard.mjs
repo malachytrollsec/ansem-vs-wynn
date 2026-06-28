@@ -24,7 +24,7 @@ try {
   const address = base58Encode(publicKey.export({ format: "der", type: "spki" }).subarray(-32));
 
   const challenge = await postJson("/wallet-challenge", { address });
-  assert(challenge.ok && challenge.address === address && challenge.message.includes("Israel vs Palestine wallet login"), "wallet challenge unusable");
+  assert(challenge.ok && challenge.address === address && challenge.message.includes("Ansem vs Wynn wallet login"), "wallet challenge unusable");
 
   const badLogin = await postJson("/wallet-login", { address, nonce: challenge.nonce, signature: "bad" }, false);
   assert(badLogin.status === 401 && badLogin.body?.error === "bad-signature", "bad signature should be rejected");
@@ -65,9 +65,9 @@ function leaderboardEntry(id, wallet, extra = {}) {
     id,
     wallet,
     kingId: "doge",
-    king: "ISRAEL",
+    king: "ANSEM",
     rivalId: "pepe",
-    rival: "PALESTINE",
+    rival: "WYNN",
     result: "won",
     wave: 99,
     kills: 999,

@@ -43,12 +43,12 @@ const server = createServer(async (req, res) => {
       return json(res, roomProofPayload(sanitizeCode(url.searchParams.get("room"))));
     }
     if (url.pathname === "/room-kit") {
-      const room = sanitizeCode(url.searchParams.get("room")) || "IVP";
+      const room = sanitizeCode(url.searchParams.get("room")) || "AVW";
       const player = sanitizeKing(url.searchParams.get("player") || url.searchParams.get("king") || "doge");
       const rival = sanitizeKing(url.searchParams.get("rival") || "pepe");
       return json(res, {
         room,
-        game: "Israel vs Palestine",
+        game: "Ansem vs Wynn",
         brand: brandPayload(),
         player: kingProfile(player, req),
         rival: kingProfile(rival, req),
@@ -555,7 +555,7 @@ function roomProofPayload(filterCode = "") {
 function factionsPayload(req, url) {
   return {
     version: "mempires-factions-v1",
-    game: "Israel vs Palestine",
+    game: "Ansem vs Wynn",
     brand: brandPayload(),
     walletAuth: walletAuthPayload(req),
     verifiedLeaderboard: verifiedLeaderboardPayload(req),
@@ -563,10 +563,10 @@ function factionsPayload(req, url) {
     arenas: arenasPayload(),
     endpoints: {
       self: `${originUrl(req)}${url.pathname}`,
-      roomKitUrl: `${originUrl(req)}/room-kit?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "IVP")}`,
-      roomStatusUrl: `${originUrl(req)}/room-status?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "IVP")}`,
-      roomEventsUrl: `${originUrl(req)}/room-events?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "IVP")}`,
-      roomProofUrl: `${originUrl(req)}/room-proof?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "IVP")}`,
+      roomKitUrl: `${originUrl(req)}/room-kit?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "AVW")}`,
+      roomStatusUrl: `${originUrl(req)}/room-status?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "AVW")}`,
+      roomEventsUrl: `${originUrl(req)}/room-events?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "AVW")}`,
+      roomProofUrl: `${originUrl(req)}/room-proof?room=${encodeURIComponent(sanitizeCode(url.searchParams.get("room")) || "AVW")}`,
       leaderboardUrl: `${originUrl(req)}/leaderboard`,
     },
   };
@@ -575,8 +575,8 @@ function factionsPayload(req, url) {
 function brandPayload() {
   return {
     version: "mempires-brand-v1",
-    name: "Israel vs Palestine",
-    ticker: "IVP",
+    name: "Ansem vs Wynn",
+    ticker: "AVW",
     chain: "Solana",
     description: "Godot web RTS wager wars with two factions, wallet-backed leaderboards, room relay, and proof streams.",
   };
@@ -632,8 +632,8 @@ function kingsPayload(req) {
 function kingProfile(id, req) {
   const clean = sanitizeKing(id);
   const labels = {
-    doge: ["ISRAEL", "Iron Dome"],
-    pepe: ["PALESTINE", "Olive Front"],
+    doge: ["ANSEM", "Alien Tape"],
+    pepe: ["WYNN", "Predator Bid"],
   };
   const [name, kingdom] = labels[clean] || labels.doge;
   const assetId = clean === "pepe" ? "palestine" : "israel";
@@ -646,37 +646,37 @@ function kingProfile(id, req) {
     portraitUrl: `${originUrl(req)}/${portrait}`,
     units: unitKinds,
     bonus: {
-      doge: "tougher infantry and support fire",
-      pepe: "faster movement and gathering",
+      doge: "alien pressure and tougher frontline trades",
+      pepe: "hunter speed and sharper market rotations",
     }[clean],
   };
 }
 
 function arenasPayload() {
   return Object.entries({
-    meadow: "Negev Flats",
-    creek: "Wadi Crossing",
-    garden: "Olive Grove",
-    ruins: "Old City Ruins",
-    grove: "Hilltop Grove",
-    crossroads: "Checkpoint Road",
-    pond: "Coastal Reservoir",
-    courtyard: "Stone Courtyard",
-    orchard: "Olive Orchard",
-    quarry: "Limestone Quarry",
-    wildflower: "Spring Scrubland",
-    millpond: "Dry Wadi",
-    isle: "Coastal Dunes",
-    festival: "Market Street",
-    causeway: "Border Causeway",
-    bannerfield: "Fence Line",
+    meadow: "Market Flats",
+    creek: "Liquidity Wadi",
+    garden: "Green Candle Grove",
+    ruins: "Chart Ruins",
+    grove: "Whale Hill",
+    crossroads: "Leverage Road",
+    pond: "Stoploss Basin",
+    courtyard: "Exchange Courtyard",
+    orchard: "Exit Liquidity",
+    quarry: "Liquidation Pit",
+    wildflower: "Pump Field",
+    millpond: "Dump Wadi",
+    isle: "Perp Dunes",
+    festival: "CTO Street",
+    causeway: "Bridge Bid",
+    bannerfield: "Ticker Line",
   }).map(([id, label]) => ({ id, label }));
 }
 
 function sanitizeKing(value) {
   const id = String(value || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 32);
-  if (["israel", "idf"].includes(id)) return "doge";
-  if (["palestine", "pal"].includes(id)) return "pepe";
+  if (["ansem", "alien", "blknoiz06"].includes(id)) return "doge";
+  if (["wynn", "predator", "jameswynnreal"].includes(id)) return "pepe";
   return ["doge", "pepe"].includes(id) ? id : "doge";
 }
 
@@ -696,11 +696,11 @@ function walletChallengePayload(body = {}) {
   const nonce = randomBytes(16).toString("hex");
   const issuedAt = new Date().toISOString();
   const message = [
-    "Israel vs Palestine wallet login",
+    "Ansem vs Wynn wallet login",
     `Wallet: ${address}`,
     `Nonce: ${nonce}`,
     `Issued: ${issuedAt}`,
-    "Only sign this message for Israel vs Palestine leaderboard identity.",
+    "Only sign this message for Ansem vs Wynn leaderboard identity.",
   ].join("\n");
   const expiresAtMs = Date.now() + challengeTtlMs;
   challenges.set(nonce, { address, message, expiresAtMs });

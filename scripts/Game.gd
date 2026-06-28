@@ -1,5 +1,5 @@
 extends Node
-## Global state + brand palette for the Israel vs Palestine RTS skin.
+## Global state + brand palette for the Ansem vs Wynn RTS skin.
 
 # --- Blue pixel identity (ported from the web build's tokens) ---
 const COL_INK := Color("06101f")
@@ -18,8 +18,8 @@ const COL_ENEMY := Color("9b3a31")
 
 # --- Launch factions ---
 const KINGS := {
-	"doge": {"name": "ISRAEL", "kingdom": "Iron Dome", "color": Color("61b8ff"), "asset": "israel"},
-	"pepe": {"name": "PALESTINE", "kingdom": "Olive Front", "color": Color("43c865"), "asset": "palestine"},
+	"doge": {"name": "ANSEM", "kingdom": "Alien Tape", "color": Color("7fe8ff"), "asset": "israel"},
+	"pepe": {"name": "WYNN", "kingdom": "Predator Bid", "color": Color("c6ff5f"), "asset": "palestine"},
 }
 
 const COSTS := {
@@ -48,18 +48,18 @@ const UNIT_NAME := {
 }
 const UNIT_NAME_BY_FACTION := {
 	"doge": {
-		"villager": "ISR WORK",
-		"swordsman": "ISR INF",
-		"archer": "ISR ARCH",
-		"lancer": "ISR LANCE",
-		"siege": "ISR SIEGE",
+		"villager": "ANS SCOUT",
+		"swordsman": "ANS CLAW",
+		"archer": "ANS SPIT",
+		"lancer": "ANS STALK",
+		"siege": "ANS HIVE",
 	},
 	"pepe": {
-		"villager": "PAL WORK",
-		"swordsman": "PAL INF",
-		"archer": "PAL ARCH",
-		"lancer": "PAL LANCE",
-		"siege": "PAL SIEGE",
+		"villager": "WYN SCOUT",
+		"swordsman": "WYN BLADE",
+		"archer": "WYN PLASMA",
+		"lancer": "WYN SPEAR",
+		"siege": "WYN HUNTER",
 	},
 }
 
@@ -76,22 +76,22 @@ var arena := "meadow"
 
 # 16 arenas (data-driven terrain). feature drives the central terrain renderer.
 const ARENAS := {
-	"meadow":     {"label": "Negev Flats",      "ground": "caa565", "feature": "scrub",      "decor": 150, "biome": "sand"},
-	"creek":      {"label": "Wadi Crossing",    "ground": "bd9559", "feature": "wadi",       "decor": 145, "biome": "sand"},
-	"garden":     {"label": "Olive Grove",      "ground": "b7985d", "feature": "olive",      "decor": 210, "biome": "sand"},
-	"ruins":      {"label": "Old City Ruins",   "ground": "b88756", "feature": "urban",      "decor": 110, "biome": "sand"},
-	"grove":      {"label": "Hilltop Grove",    "ground": "b99a61", "feature": "olive",      "decor": 230, "biome": "sand"},
-	"crossroads": {"label": "Checkpoint Road",  "ground": "c29a5f", "feature": "checkpoint", "decor": 125, "biome": "sand"},
-	"pond":       {"label": "Coastal Reservoir","ground": "c6a269", "feature": "pond",       "decor": 150, "biome": "sand"},
-	"courtyard":  {"label": "Stone Courtyard",  "ground": "b8925a", "feature": "plaza",      "decor": 95,  "biome": "sand"},
-	"orchard":    {"label": "Olive Orchard",    "ground": "b99862", "feature": "olive",      "decor": 220, "biome": "sand"},
-	"quarry":     {"label": "Limestone Quarry", "ground": "ad8551", "feature": "quarry",     "decor": 95,  "biome": "sand"},
-	"wildflower": {"label": "Spring Scrubland", "ground": "c4a064", "feature": "scrub",      "decor": 250, "biome": "sand"},
-	"millpond":   {"label": "Dry Wadi",         "ground": "bd9559", "feature": "wadi",       "decor": 155, "biome": "sand"},
-	"isle":       {"label": "Coastal Dunes",    "ground": "d2ad70", "feature": "coast",      "decor": 130, "biome": "sand"},
-	"festival":   {"label": "Market Street",    "ground": "b48d58", "feature": "urban",      "decor": 145, "biome": "sand"},
-	"causeway":   {"label": "Border Causeway",  "ground": "c19b61", "feature": "checkpoint", "decor": 130, "biome": "sand"},
-	"bannerfield":{"label": "Fence Line",       "ground": "bd9359", "feature": "fence",      "decor": 150, "biome": "sand"},
+	"meadow":     {"label": "Market Flats",     "ground": "caa565", "feature": "scrub",      "decor": 150, "biome": "sand"},
+	"creek":      {"label": "Liquidity Wadi",   "ground": "bd9559", "feature": "wadi",       "decor": 145, "biome": "sand"},
+	"garden":     {"label": "Green Candle Grove","ground": "b7985d", "feature": "olive",     "decor": 210, "biome": "sand"},
+	"ruins":      {"label": "Chart Ruins",      "ground": "b88756", "feature": "urban",      "decor": 110, "biome": "sand"},
+	"grove":      {"label": "Whale Hill",       "ground": "b99a61", "feature": "olive",      "decor": 230, "biome": "sand"},
+	"crossroads": {"label": "Leverage Road",    "ground": "c29a5f", "feature": "checkpoint", "decor": 125, "biome": "sand"},
+	"pond":       {"label": "Stoploss Basin",   "ground": "c6a269", "feature": "pond",       "decor": 150, "biome": "sand"},
+	"courtyard":  {"label": "Exchange Courtyard","ground": "b8925a", "feature": "plaza",     "decor": 95,  "biome": "sand"},
+	"orchard":    {"label": "Exit Liquidity",   "ground": "b99862", "feature": "olive",      "decor": 220, "biome": "sand"},
+	"quarry":     {"label": "Liquidation Pit",  "ground": "ad8551", "feature": "quarry",     "decor": 95,  "biome": "sand"},
+	"wildflower": {"label": "Pump Field",       "ground": "c4a064", "feature": "scrub",      "decor": 250, "biome": "sand"},
+	"millpond":   {"label": "Dump Wadi",        "ground": "bd9559", "feature": "wadi",       "decor": 155, "biome": "sand"},
+	"isle":       {"label": "Perp Dunes",       "ground": "d2ad70", "feature": "coast",      "decor": 130, "biome": "sand"},
+	"festival":   {"label": "CTO Street",       "ground": "b48d58", "feature": "urban",      "decor": 145, "biome": "sand"},
+	"causeway":   {"label": "Bridge Bid",       "ground": "c19b61", "feature": "checkpoint", "decor": 130, "biome": "sand"},
+	"bannerfield":{"label": "Ticker Line",      "ground": "bd9359", "feature": "fence",      "decor": 150, "biome": "sand"},
 }
 const ARENA_ORDER := ["meadow", "creek", "garden", "ruins", "grove", "crossroads", "pond", "courtyard", "orchard", "quarry", "wildflower", "millpond", "isle", "festival", "causeway", "bannerfield"]
 

@@ -1,6 +1,6 @@
-# Israel vs Palestine
+# Ansem vs Wynn
 
-Godot RTS wager-battle for israelvspalestine.org. Pick Israel or Palestine, choose pressure and arena, build an economy, train units, crack the rival keep, and post wallet-backed results to the local leaderboard.
+Godot RTS wager-battle for ansemvswynn.com. Pick Ansem or Wynn, choose pressure and arena, build an economy, train units, crack the rival keep, and post wallet-backed results to the local leaderboard.
 
 ## Run
 
@@ -13,9 +13,9 @@ Open `http://127.0.0.1:8799/`.
 Shareable browser params are supported for game setup and multiplayer room entry:
 
 ```text
-http://127.0.0.1:8799/?king=israel&rival=palestine&pressure=rush&arena=creek&stake=500&start=1
-http://127.0.0.1:8799/?room=IVP&host=1&king=israel&rival=palestine&stake=250
-http://127.0.0.1:8799/?room=IVP&join=1&king=palestine&rival=israel&stake=250
+http://127.0.0.1:8799/?king=ansem&rival=wynn&pressure=rush&arena=creek&stake=500&start=1
+http://127.0.0.1:8799/?room=AVW&host=1&king=ansem&rival=wynn&stake=250
+http://127.0.0.1:8799/?room=AVW&join=1&king=wynn&rival=ansem&stake=250
 ```
 
 For a fresh web export:
@@ -26,7 +26,7 @@ npm run export:web
 
 ## Play Surface
 
-- Two sides: Israel and Palestine.
+- Two sides: Ansem and Wynn.
 - Sixteen arid arenas with data-driven terrain dressing.
 - Pressure modes: standard, rush, and siege.
 - RTS loop: villagers, army units, housing, forge, towers, market income, upgrades, rally, minimap, waves, and win/loss results.

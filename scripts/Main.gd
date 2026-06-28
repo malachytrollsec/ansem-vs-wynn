@@ -345,7 +345,7 @@ func _web_meme_sprite_preview() -> void:
 		if not kings.has(king):
 			kings.append(king)
 	Game.selection_changed.emit(kinds.size())
-	Game.log_event("Israel and Palestine unit sprite preview staged.")
+	Game.log_event("Ansem and Wynn unit sprite preview staged.")
 	_publish_web_match_state({
 		"memeSpritePreview": true,
 		"memeSpriteKings": kings,
@@ -680,8 +680,8 @@ func _selection_summary_smoke() -> void:
 	var summary := _prepare_selection_summary_preview()
 	var composition := String(summary.get("composition", ""))
 	var ok := int(summary.get("count", 0)) == 2 \
-		and composition.contains("ISR WORK") \
-		and composition.contains("ISR INF") \
+		and composition.contains("ANS SCOUT") \
+		and composition.contains("ANS CLAW") \
 		and int(summary.get("avgHp", 100)) < 100 \
 		and String(summary.get("order", "")) == "MIXED"
 	print("SELECTION_SUMMARY_SMOKE count=%d composition=%s hp=%d order=%s ok=%s" % [int(summary.get("count", 0)), composition, int(summary.get("avgHp", 0)), String(summary.get("order", "")), str(ok).to_lower()])
