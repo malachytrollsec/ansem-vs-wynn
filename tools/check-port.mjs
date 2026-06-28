@@ -103,20 +103,20 @@ for (const path of [
   "scripts/Main.gd",
   "scripts/Net.gd",
   "scripts/Wallet.gd",
-  "assets/portraits/faction_portrait_israel.png",
-  "assets/portraits/faction_portrait_palestine.png",
-  "assets/ui/faction_icon_israel.png",
-  "assets/ui/faction_icon_palestine.png",
-  "assets/units/israel_swordsman_walk.png",
-  "assets/units/israel_villager_walk.png",
-  "assets/units/israel_archer_walk.png",
-  "assets/units/israel_lancer_walk.png",
-  "assets/units/israel_siege_walk.png",
-  "assets/units/palestine_swordsman_walk.png",
-  "assets/units/palestine_villager_walk.png",
-  "assets/units/palestine_archer_walk.png",
-  "assets/units/palestine_lancer_walk.png",
-  "assets/units/palestine_siege_walk.png",
+  "assets/portraits/faction_portrait_ansem.png",
+  "assets/portraits/faction_portrait_wynn.png",
+  "assets/ui/faction_icon_ansem.png",
+  "assets/ui/faction_icon_wynn.png",
+  "assets/units/ansem_swordsman_walk.png",
+  "assets/units/ansem_villager_walk.png",
+  "assets/units/ansem_archer_walk.png",
+  "assets/units/ansem_lancer_walk.png",
+  "assets/units/ansem_siege_walk.png",
+  "assets/units/wynn_swordsman_walk.png",
+  "assets/units/wynn_villager_walk.png",
+  "assets/units/wynn_archer_walk.png",
+  "assets/units/wynn_lancer_walk.png",
+  "assets/units/wynn_siege_walk.png",
   "assets/terrain/terrain_grass_battlefield.png",
   "assets/terrain/terrain_grass_tile.png",
   "assets/terrain/terrain_grass_variation_01.png",
@@ -193,6 +193,7 @@ const factionSlicer = await read("tools/slice-faction-sprites.py");
 const html = await read("build/web/index.html");
 
 requireText("project", project, 'config/name="Ansem vs Wynn"');
+requireText("project icon", project, 'config/icon="res://assets/ui/faction_icon_ansem.png"');
 requireText("project web viewport", project, "window/size/viewport_width=1280");
 requireText("project web viewport", project, "window/size/viewport_height=720");
 requireText("project web stretch", project, 'window/stretch/aspect="expand"');
@@ -277,18 +278,13 @@ requireText("game opening resources", game, "const START_POP_CAP := 24");
 requireText("unit sturdier villagers", unit, "hp = 60.0; max_hp = 60.0");
 requireText("faction sprite slicer", factionSlicer, "SOURCES_BY_FACTION");
 requireText("faction sprite slicer", factionSlicer, 'f"{faction}_{kind}_walk.png"');
-requireText("faction sprite slicer", factionSlicer, "DERIVED_ROLES");
-requireText("israel sprite slicer", factionSlicer, '"israel"');
-requireText("israel sprite slicer", factionSlicer, "idf swordsman.png");
-requireText("israel sprite slicer", factionSlicer, "idf villager.png");
-requireText("israel sprite slicer", factionSlicer, "idf archer.png");
-requireText("israel sprite slicer", factionSlicer, "idf siegecrawler.png");
-requireText("palestine sprite slicer", factionSlicer, '"palestine"');
-requireText("palestine sprite slicer", factionSlicer, "pal swordsman.png");
-requireText("palestine sprite slicer", factionSlicer, "palestinian villlager.png");
-requireText("derived sprite slicer", factionSlicer, '"lancer"');
-requireText("derived sprite slicer", factionSlicer, '"archer"');
-requireText("derived sprite slicer", factionSlicer, '"siege"');
+requireText("faction sprite slicer", factionSlicer, "GENERATED_DIR");
+requireText("ansem sprite slicer", factionSlicer, '"ansem"');
+requireText("ansem sprite slicer", factionSlicer, "portrait_ansem.png");
+requireText("wynn sprite slicer", factionSlicer, '"wynn"');
+requireText("wynn sprite slicer", factionSlicer, "portrait_wynn.png");
+requireText("avw sprite slicer", factionSlicer, "GENERATED_DIR");
+requireText("avw sprite slicer", factionSlicer, "UNIT_KINDS");
 requireText("main destroyed entities", main, "--destroyed-entity-smoke");
 requireText("main destroyed entities", main, "func _node_alive");
 requireText("main destroyed entities", main, "func _prune_dead_entities");
@@ -648,16 +644,16 @@ for (const artifact of ["build/web/index.pck", "build/web/index.wasm"]) {
 }
 
 for (const sprite of [
-  "assets/units/israel_swordsman_walk.png",
-  "assets/units/israel_villager_walk.png",
-  "assets/units/israel_archer_walk.png",
-  "assets/units/israel_lancer_walk.png",
-  "assets/units/israel_siege_walk.png",
-  "assets/units/palestine_swordsman_walk.png",
-  "assets/units/palestine_villager_walk.png",
-  "assets/units/palestine_archer_walk.png",
-  "assets/units/palestine_lancer_walk.png",
-  "assets/units/palestine_siege_walk.png",
+  "assets/units/ansem_swordsman_walk.png",
+  "assets/units/ansem_villager_walk.png",
+  "assets/units/ansem_archer_walk.png",
+  "assets/units/ansem_lancer_walk.png",
+  "assets/units/ansem_siege_walk.png",
+  "assets/units/wynn_swordsman_walk.png",
+  "assets/units/wynn_villager_walk.png",
+  "assets/units/wynn_archer_walk.png",
+  "assets/units/wynn_lancer_walk.png",
+  "assets/units/wynn_siege_walk.png",
 ]) {
   const meta = await run("magick", [join(root, sprite), "-format", "%w %h %[channels] %[opaque]", "info:"]);
   const parts = meta.trim().split(/\s+/);

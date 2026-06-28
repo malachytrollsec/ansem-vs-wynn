@@ -636,7 +636,7 @@ function kingProfile(id, req) {
     pepe: ["WYNN", "Predator Bid"],
   };
   const [name, kingdom] = labels[clean] || labels.doge;
-  const assetId = clean === "pepe" ? "palestine" : "israel";
+  const assetId = clean === "pepe" ? "wynn" : "ansem";
   const portrait = `assets/portraits/faction_portrait_${assetId}.png`;
   return {
     id: clean,
@@ -655,7 +655,7 @@ function kingProfile(id, req) {
 function arenasPayload() {
   return Object.entries({
     meadow: "Market Flats",
-    creek: "Liquidity Wadi",
+    creek: "Liquidity Ravine",
     garden: "Green Candle Grove",
     ruins: "Chart Ruins",
     grove: "Whale Hill",
@@ -665,7 +665,7 @@ function arenasPayload() {
     orchard: "Exit Liquidity",
     quarry: "Liquidation Pit",
     wildflower: "Pump Field",
-    millpond: "Dump Wadi",
+    millpond: "Dump Ravine",
     isle: "Perp Dunes",
     festival: "CTO Street",
     causeway: "Bridge Bid",

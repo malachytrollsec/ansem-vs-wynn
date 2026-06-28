@@ -18,8 +18,8 @@ const COL_ENEMY := Color("9b3a31")
 
 # --- Launch factions ---
 const KINGS := {
-	"doge": {"name": "ANSEM", "kingdom": "Alien Tape", "color": Color("7fe8ff"), "asset": "israel"},
-	"pepe": {"name": "WYNN", "kingdom": "Predator Bid", "color": Color("c6ff5f"), "asset": "palestine"},
+	"doge": {"name": "ANSEM", "kingdom": "Alien Tape", "color": Color("7fe8ff"), "asset": "ansem"},
+	"pepe": {"name": "WYNN", "kingdom": "Predator Bid", "color": Color("c6ff5f"), "asset": "wynn"},
 }
 
 const COSTS := {
@@ -77,7 +77,7 @@ var arena := "meadow"
 # 16 arenas (data-driven terrain). feature drives the central terrain renderer.
 const ARENAS := {
 	"meadow":     {"label": "Market Flats",     "ground": "caa565", "feature": "scrub",      "decor": 150, "biome": "sand"},
-	"creek":      {"label": "Liquidity Wadi",   "ground": "bd9559", "feature": "wadi",       "decor": 145, "biome": "sand"},
+	"creek":      {"label": "Liquidity Ravine", "ground": "bd9559", "feature": "wadi",       "decor": 145, "biome": "sand"},
 	"garden":     {"label": "Green Candle Grove","ground": "b7985d", "feature": "olive",     "decor": 210, "biome": "sand"},
 	"ruins":      {"label": "Chart Ruins",      "ground": "b88756", "feature": "urban",      "decor": 110, "biome": "sand"},
 	"grove":      {"label": "Whale Hill",       "ground": "b99a61", "feature": "olive",      "decor": 230, "biome": "sand"},
@@ -87,7 +87,7 @@ const ARENAS := {
 	"orchard":    {"label": "Exit Liquidity",   "ground": "b99862", "feature": "olive",      "decor": 220, "biome": "sand"},
 	"quarry":     {"label": "Liquidation Pit",  "ground": "ad8551", "feature": "quarry",     "decor": 95,  "biome": "sand"},
 	"wildflower": {"label": "Pump Field",       "ground": "c4a064", "feature": "scrub",      "decor": 250, "biome": "sand"},
-	"millpond":   {"label": "Dump Wadi",        "ground": "bd9559", "feature": "wadi",       "decor": 155, "biome": "sand"},
+	"millpond":   {"label": "Dump Ravine",      "ground": "bd9559", "feature": "wadi",       "decor": 155, "biome": "sand"},
 	"isle":       {"label": "Perp Dunes",       "ground": "d2ad70", "feature": "coast",      "decor": 130, "biome": "sand"},
 	"festival":   {"label": "CTO Street",       "ground": "b48d58", "feature": "urban",      "decor": 145, "biome": "sand"},
 	"causeway":   {"label": "Bridge Bid",       "ground": "c19b61", "feature": "checkpoint", "decor": 130, "biome": "sand"},

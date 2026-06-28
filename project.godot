@@ -15,7 +15,7 @@ config/description="Pixel RTS wager-battle for ansemvswynn.com."
 run/main_scene="res://scenes/StartMenu.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 boot_splash/show_image=false
-config/icon="res://assets/ui/faction_icon_israel.png"
+config/icon="res://assets/ui/faction_icon_ansem.png"
 
 [autoload]
 

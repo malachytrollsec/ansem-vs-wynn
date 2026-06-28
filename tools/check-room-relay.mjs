@@ -249,8 +249,7 @@ try {
 
   console.log(`[memepire-room] relay/status/events/proof/leaderboard verified for ${room}`);
 } finally {
-  server.kill("SIGTERM");
-  await once(server, "exit").catch(() => {});
+  await stopServer();
 }
 
 async function fetchJson(path) {
@@ -358,7 +357,7 @@ async function openWs({ roomCode = room, role, from, label, king }) {
       throw new Error(`${role} timed out waiting for ${label}; saw ${JSON.stringify(messages)}`);
     },
     close() {
-      socket.end();
+      socket.destroy();
     },
   };
   client.send({ type: "join", identity: { label, king } });
@@ -416,4 +415,19 @@ function assert(ok, message) {
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function stopServer() {
+  if (server.exitCode !== null || server.signalCode !== null) return;
+  server.kill("SIGTERM");
+  const exited = await Promise.race([
+    once(server, "exit").then(() => true).catch(() => true),
+    delay(1500).then(() => false),
+  ]);
+  if (exited) return;
+  server.kill("SIGKILL");
+  await Promise.race([
+    once(server, "exit").catch(() => {}),
+    delay(1000),
+  ]);
 }
