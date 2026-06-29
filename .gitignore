@@ -1,0 +1,13 @@
+# Godot 4
+.godot/
+/android/
+/builds/
+.avw-runtime/
+.avw-data/
+.claude/
+.DS_Store
+.mcp.json
+
+# debug capture artifact
+_preview.png
+_preview.png.import
